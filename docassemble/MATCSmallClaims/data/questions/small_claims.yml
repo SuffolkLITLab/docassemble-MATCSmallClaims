@@ -1,0 +1,460 @@
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+---
+metadata:
+  title: >-
+    Small claims
+  short title: >-
+    Small claims
+  description: |-
+    This interview helps someone in Massachusetts file for small claims.
+  can_I_use_this_form: |
+    If you are a plaintiff, you can use this interview to file a statement of small claim and notice.
+  before_you_start: |
+    This interview will help you file for small claims.
+    
+    Before you get started, please gather:
+    
+    1. Attorney and defendant information.
+    2. Your claim which clearly states why the defendant is being sued.
+    
+    When you are finished, you will need to:
+    
+    1. Await further instructions regarding your case.
+  maturity: production
+  estimated_completion_minutes: 60
+  estimated_completion_delta: 30
+  LIST_topics: 
+    - "MO-10-00-00-00"
+  tags:
+    - "MO-10-00-00-00"
+  authors:
+    - Nava Ebadollahi
+  original_form: []
+  original_form_published_on: 2024-06-05
+  allowed_courts: 
+    - "Small Claims Court"
+  typical_role: "plaintiff"
+  al_weaver_version: "1.10.3"
+  generated_on: "2024-06-05"
+  languages:
+    - en
+  jurisdiction: NAM-US-US+MA
+  review_date: 2024-06-05
+  form_titles:
+    - Small claims
+  form_numbers: []
+  update_notes: |
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "MA"
+---
+code: |
+  github_repo_name =  'docassemble-SmallClaims'
+---
+code: |
+  interview_short_title = "File for small claims"
+---
+code: |
+  al_form_type = "existing_case" 
+---
+objects:
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+---
+sections:
+  - review_small_claims: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_small_claims
+code: |
+  # Set the allowed courts for this interview
+  allowed_courts = ['Other', 'Small Claims Court']
+  nav.set_section("review_small_claims")
+  user_role = "plaintiff"
+  user_ask_role = "plaintiff"
+  users.gather()
+  set_parts(subtitle=str(users))
+  bmc
+  is_willing_mediation
+  set_progress(14)
+  docket_number
+  attorneys.gather()
+  attorneys[0].address.address
+  set_progress(28)
+  users[0].address.address
+  users[0].phone_number
+  attorneys[0].phone_number
+  set_progress(42)
+  defendants.gather()
+  defendants[0].address.address
+  defendants[1].address.address
+  set_progress(56)
+  defendants[0].phone_number
+  defendants[1].phone_number
+  signature_date
+  interview_order_small_claims = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  small_claims_intro
+  interview_order_small_claims
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  small_claims_download
+---
+id: Small_claims
+continue button field: small_claims_intro
+question: |
+  Small claims
+subquestion: |
+  This interview will help you file for small claims.
+  
+  Before you get started, please gather:
+  
+  1. Attorney and defendant information.
+  2. Your claim which clearly states why the defendant is being sued.
+  
+  When you are finished, you will need to:
+  
+  1. Await further instructions regarding your case.
+
+  If you are a plaintiff, you can use this interview to file a statement of small claim and notice.
+
+  Most people take about 10 minutes to complete this interview.
+---
+id: Plaintiff s Claim
+question: |
+  Plaintiff's Claim
+subquestion: |
+  Provide basic information and specify the amount that is being sued for.
+fields:
+  - "Bmc": bmc
+    maxlength: 79
+  - "District": district
+    maxlength: 79
+  - "Housing": housing
+    maxlength: 79
+  - "Bbo number": bbo_number
+    maxlength: 11
+  - "Defendant owes amount": defendant_owes_amount
+    datatype: currency
+    min: 0
+  - "Defendant court costs amount": defendant_court_costs_amount
+    datatype: currency
+    min: 0
+  - "Reason for suing defendant": reason_for_suing_defendant
+    input type: area
+    maxlength: 1395
+---
+id: Additional Information
+question: |
+  Additional Information
+subquestion: |
+  Provide additional information regarding mediation and complete the military affidavit.
+fields:
+  - "Is willing mediation": is_willing_mediation
+    datatype: yesnoradio
+  - "Not current military defendant": not_current_military_defendant
+    maxlength: 88
+  - "Not current military": not_current_military
+    datatype: yesnoradio
+  - "Current military defendant": current_military_defendant
+    maxlength: 88
+  - "Unknown current military": unknown_current_military
+    datatype: yesnoradio
+  - "Is current military": is_current_military
+    datatype: yesnoradio
+---
+id: preview small_claims
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_court_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_small_claims'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: small_claims_preview_question    
+---
+code: |
+  signature_fields = ['users[0].signature']
+---
+code: |
+  # This is a placeholder for the addresses that will be searched
+  # for matching address to court. Edit if court venue is based on 
+  # a different address than the user's
+  [user.address.address for user in users.complete_elements()]
+  addresses_to_search = [user.address for user in users.complete_elements()]
+---
+id: small claims review screen
+event: review_small_claims
+question: |
+  Review your answers
+review:
+  - Edit: docket_number
+    button: |
+      **Docket number**:
+      ${ docket_number }
+  - Edit: bmc
+    button: |
+      **Bmc**:
+      ${ bmc }
+  - Edit: district
+    button: |
+      **District**:
+      ${ district }
+  - Edit: housing
+    button: |
+      **Housing**:
+      ${ housing }
+  - Edit: attorneys.revisit
+    button: |
+      **Attorneys**
+
+      % for item in attorneys:
+        * ${ item }
+      % endfor
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: bbo_number
+    button: |
+      **Bbo number**:
+      ${ bbo_number }
+  - Edit: defendants.revisit
+    button: |
+      **Defendants**
+
+      % for item in defendants:
+        * ${ item }
+      % endfor
+  - Edit: defendant_owes_amount
+    button: |
+      **Defendant owes amount**:
+      ${ currency(defendant_owes_amount) }
+  - Edit: defendant_court_costs_amount
+    button: |
+      **Defendant court costs amount**:
+      ${ currency(defendant_court_costs_amount) }
+  - Edit: reason_for_suing_defendant
+    button: |
+      **Reason for suing defendant**:
+      > ${ single_paragraph(reason_for_suing_defendant) }
+  - Edit: signature_date
+    button: |
+      **Date of signature**:
+      ${ signature_date }
+  - Edit: is_willing_mediation
+    button: |
+      **Is willing mediation**:
+      ${ is_willing_mediation }
+  - Edit: not_current_military_defendant
+    button: |
+      **Not current military defendant**:
+      ${ not_current_military_defendant }
+  - Edit: not_current_military
+    button: |
+      **Not current military**:
+      ${ not_current_military }
+  - Edit: current_military_defendant
+    button: |
+      **Current military defendant**:
+      ${ current_military_defendant }
+  - Edit: unknown_current_military
+    button: |
+      **Unknown current military**:
+      ${ unknown_current_military }
+  - Edit: is_current_military
+    button: |
+      **Is current military**:
+      ${ is_current_military }
+---
+continue button field: attorneys.revisit
+question: |
+  Edit attorneys
+subquestion: |
+  ${ attorneys.table }
+
+  ${ attorneys.add_action() }
+---
+table: attorneys.table
+rows: attorneys
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+edit:
+  - name.first
+  - address.address
+  - phone_number
+confirm: True
+
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
+edit:
+  - name.first
+  - address.address
+  - phone_number
+  - signature
+confirm: True
+
+---
+continue button field: defendants.revisit
+question: |
+  Edit defendants
+subquestion: |
+  ${ defendants.table }
+
+  ${ defendants.add_action() }
+---
+table: defendants.table
+rows: defendants
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+edit:
+  - name.first
+  - address.address
+  - phone_number
+confirm: True
+
+---
+id: download small_claims
+event: small_claims_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_small_claims'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+
+progress: 100
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
+  - small_claims_attachment: ALDocument.using(title="Small claims", filename="small_claims", enabled=True, has_addendum=False, )
+---
+# Bundles group the ALDocuments into separate downloads, such as for court and for the user
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment],  filename="small_claims", title="All forms to deliver to court", enabled=True)
+---
+# Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
+# used for "preview" and "final" keys, and logic in the template checks the value of 
+# `i` to show or hide the user's signature
+attachment:
+  name: Post-interview-Instructions
+  filename: small_claims_next_steps
+  docx template file: small_claims_next_steps.docx
+  variable name: small_claims_Post_interview_instructions[i]
+  skip undefined: True
+  tagged pdf: True
+---
+attachment:
+  name: small claims
+  filename: small_claims
+  variable name: small_claims_attachment[i]
+  skip undefined: True
+  pdf template file: small_claims.pdf
+  fields:
+      - "docket_number": ${ docket_number }
+      - "bmc": ${ bmc }
+      - "district": ${ district }
+      - "housing": ${ housing }
+      - "attorney_name": ${ attorneys[0] }
+      - "user_name": ${ users[0] }
+      - "attorney_address_line_one": ${ attorneys[0].address.line_one() }
+      - "user_address_line_one": ${ users[0].address.line_one() }
+      - "user_address_line_two": ${ users[0].address.line_two() }
+      - "attorney_address_line_two": ${ attorneys[0].address.line_two() }
+      - "user_phone_number": ${ users[0].phone_number }
+      - "attorney_phone_number": ${ attorneys[0].phone_number }
+      - "bbo_number": ${ bbo_number }
+      - "defendant1_name": ${ defendants[0] }
+      - "defendant2_name": ${ defendants[1] }
+      - "defendant1_address_line_one": ${ defendants[0].address.line_one() }
+      - "defendant2_address_line_one": ${ defendants[1].address.line_one() }
+      - "defendant2_address_line_two": ${ defendants[1].address.line_two() }
+      - "defendant1_address_line_two": ${ defendants[0].address.line_two() }
+      - "defendant1_phone_number": ${ defendants[0].phone_number }
+      - "defendant2_phone_number": ${ defendants[1].phone_number }
+      - "defendant_owes_amount": ${ currency(defendant_owes_amount) }
+      - "defendant_court_costs_amount": ${ currency(defendant_court_costs_amount) }
+      - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
+      - "signature_date__1": ${ signature_date }
+      - "signature_date__2": ${ signature_date }
+      - "user_signature__1": ${ users[0].signature }
+      - "user_signature__2": ${ users[0].signature }
+      - "is_willing_mediation_yes": ${ is_willing_mediation }
+      - "is_willing_mediation_no": ${ not is_willing_mediation }
+      - "not_current_military_defendant": ${ not_current_military_defendant }
+      - "not_current_military": ${ not_current_military }
+      - "current_military_defendant": ${ current_military_defendant }
+      - "unknown_current_military": ${ unknown_current_military }
+      - "is_current_military": ${ is_current_military }
+
+
+
