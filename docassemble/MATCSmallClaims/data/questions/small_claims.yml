@@ -1,6 +1,7 @@
 ---
 include:
-  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.AssemblyLine:assembly_line.yml 
+  - docassemble.MassAccess:massaccess.yml
 ---
 metadata:
   title: >-
@@ -21,7 +22,8 @@ metadata:
     
     When you are finished, you will need to:
     
-    1. Await further instructions regarding your case.
+    1. Submit payment of the filing fee.
+    2. Await further instructions regarding your case.
   maturity: production
   estimated_completion_minutes: 60
   estimated_completion_delta: 30
@@ -82,7 +84,7 @@ code: |
   user_ask_role = "plaintiff"
   users.gather()
   set_parts(subtitle=str(users))
-  bmc
+  trial_court
   is_willing_mediation
   set_progress(14)
   docket_number
@@ -136,7 +138,8 @@ subquestion: |
   
   When you are finished, you will need to:
   
-  1. Await further instructions regarding your case.
+  1. Submit payment of the filing fee. 
+  2. Await further instructions regarding your case.
 
   If you are a plaintiff, you can use this interview to file a statement of small claim and notice.
 
@@ -148,14 +151,10 @@ question: |
 subquestion: |
   Provide basic information and specify the amount that is being sued for.
 fields:
-  - "Bmc": bmc
-    maxlength: 79
-  - "District": district
-    maxlength: 79
-  - "Housing": housing
-    maxlength: 79
+  
   - "Bbo number": bbo_number
     maxlength: 11
+    required: False
   - "Defendant owes amount": defendant_owes_amount
     datatype: currency
     min: 0
@@ -170,9 +169,11 @@ id: Additional Information
 question: |
   Additional Information
 subquestion: |
-  Provide additional information regarding mediation and complete the military affidavit.
+  Provide additional information regarding mediation and complete the military affidavit. 
+  
+  The mediator will assist the parties in trying to resolve the dispute on mutually agreed terms. The Plaintiff must notify the court if he or she desires mediation. The defendant may consent to mediation on the trial date. 
 fields:
-  - "Is willing mediation": is_willing_mediation
+  - "Are you willing mediation": is_willing_mediation
     datatype: yesnoradio
   - "Not current military defendant": not_current_military_defendant
     maxlength: 88
@@ -421,9 +422,18 @@ attachment:
   pdf template file: small_claims.pdf
   fields:
       - "docket_number": ${ docket_number }
-      - "bmc": ${ bmc }
-      - "district": ${ district }
-      - "housing": ${ housing }
+      - "bmc": | 
+             % if trial_court.department == "Boston Municipal Court": 
+             ${ trial_court.division } 
+             % endif 
+      - "district": | 
+             % if trial_court.department == "District Court": 
+             ${ trial_court.division } 
+             % endif
+      - "housing": | 
+             % if trial_court.department == "Housing Court": 
+             ${ trial_court.division } 
+             % endif
       - "attorney_name": ${ attorneys[0] }
       - "user_name": ${ users[0] }
       - "attorney_address_line_one": ${ attorneys[0].address.line_one() }
