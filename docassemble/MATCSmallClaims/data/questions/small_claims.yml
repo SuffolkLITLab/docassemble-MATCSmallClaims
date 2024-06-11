@@ -1,4 +1,3 @@
----
 include:
   - docassemble.AssemblyLine:assembly_line.yml 
   - docassemble.MassAccess:massaccess.yml
@@ -68,6 +67,7 @@ code: |
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - attorneys: ALPeopleList.using(complete_attribute="participation")
 ---
 sections:
   - review_small_claims: Review your answers
@@ -80,28 +80,29 @@ code: |
   # Set the allowed courts for this interview
   allowed_courts = ['Other', 'Small Claims Court']
   nav.set_section("review_small_claims")
+  
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
-  users.gather()
+  users.gather() 
   set_parts(subtitle=str(users))
   trial_court
-  is_willing_mediation
   set_progress(14)
   docket_number
   attorneys.gather()
-  attorneys[0].address.address
+  #attorneys[0].address.address
+  #attorneys[0].phone_number
   set_progress(28)
   users[0].address.address
   users[0].phone_number
-  attorneys[0].phone_number
   set_progress(42)
   defendants.gather()
   defendants[0].address.address
-  defendants[1].address.address
-  set_progress(56)
   defendants[0].phone_number
+  set_progress(56)
+  defendants[1].address.address
   defendants[1].phone_number
-  signature_date
+  is_willing_mediation
+  signature_date 
   interview_order_small_claims = True
 ---
 ###################### Main order ######################
@@ -123,6 +124,14 @@ code: |
       },
   )
   small_claims_download
+---
+id: attorney
+code: |
+  attorneys[i].name.first
+  attorneys[i].address.address
+  attorneys[i].phone_number
+  attorneys[i].participation = True
+
 ---
 id: Small_claims
 continue button field: small_claims_intro
@@ -152,9 +161,6 @@ subquestion: |
   Provide basic information and specify the amount that is being sued for.
 fields:
   
-  - "Bbo number": bbo_number
-    maxlength: 11
-    required: False
   - "Defendant owes amount": defendant_owes_amount
     datatype: currency
     min: 0
@@ -167,24 +173,85 @@ fields:
 ---
 id: Additional Information
 question: |
-  Additional Information
-subquestion: |
-  Provide additional information regarding mediation and complete the military affidavit. 
-  
+  Are you willing to attempt to settle this claim through mediation?
+subquestion: | 
   The mediator will assist the parties in trying to resolve the dispute on mutually agreed terms. The Plaintiff must notify the court if he or she desires mediation. The defendant may consent to mediation on the trial date. 
+  
 fields:
   - "Are you willing mediation": is_willing_mediation
     datatype: yesnoradio
-  - "Not current military defendant": not_current_military_defendant
-    maxlength: 88
+---
+id: who will be on this form
+generic object: ALPeopleList
+question: |
+  Will this form include any ${noun_plural(x.object_name())}?
+fields:
+  - no label: x.there_are_any
+    datatype: yesnoradio
+---
+id: name of the first person
+sets:
+  - x[0].name.first
+  - x[0].name.last
+  - x[0].name.middle
+  - x[0].name.suffix
+  - x[0].name.address.zip
+generic object: ALPeopleList
+question: |
+  % if hasattr(x, 'ask_number') and x.ask_number and x.target_number == 1:
+  Name of ${ noun_plural(x.object_name(),1) }
+  % else:
+  Name of your first ${ noun_plural(x.object_name(),1) }
+  % endif
+fields:
+  - code: |
+      x[0].name_fields()
+  - "Bbo number": bbo_number
+    maxlength: 6
+    required: True
+
+---
+id: Military Affidavit 
+question: | 
+   Is the defendant in the military?
+
+fields: 
   - "Not current military": not_current_military
     datatype: yesnoradio
-  - "Current military defendant": current_military_defendant
-    maxlength: 88
   - "Unknown current military": unknown_current_military
     datatype: yesnoradio
   - "Is current military": is_current_military
     datatype: yesnoradio
+---
+id: Are there an opposing party?
+question: |
+  % if al_form_type in ['starts_case','existing_case','appeal'] and user_started_case:
+  Is there a **defendant** or respondent in this case? 
+  % elif al_form_type in ['starts_case','existing_case','appeal']:
+  Is there a **plaintiff** or petitioner in this case?
+  % else:
+  Is there someone on the other side of your dispute?
+  % endif
+subquestion: |
+  % if al_form_type in ['starts_case','existing_case','appeal'] and user_started_case:
+  Answer yes if there is a person or organization you are suing or taking to court.
+  % elif al_form_type in ['starts_case','existing_case','appeal']:
+  You should be able to find out from the paperwork that told you to 
+  go to court.
+
+  Answer yes if someone else has sued you or is bringing you to court.
+  % endif
+fields:
+  - no label: other_parties.there_are_any
+    datatype: yesnoradio
+--- 
+id: persons contact information
+generic object: ALIndividual
+question: |
+  What is ${x}'s phone number?
+fields:
+  - Phone: users[0].phone_number
+
 ---
 id: preview small_claims
 question: |
@@ -316,10 +383,13 @@ columns:
       row_item.address.block() if defined("row_item.address.address") else ""
   - Phone number: |
       row_item.phone_number if defined("row_item.phone_number") else ""
+  - Zip Code: | 
+      row_item.zip_code if defined ( "users[0].address.zip" ) else""
 edit:
   - name.first
   - address.address
   - phone_number
+  - Zip_code
 confirm: True
 
 ---
@@ -436,6 +506,7 @@ attachment:
              % endif
       - "attorney_name": ${ attorneys[0] }
       - "user_name": ${ users[0] }
+      - "user_language": ${ user[0].person.language () }
       - "attorney_address_line_one": ${ attorneys[0].address.line_one() }
       - "user_address_line_one": ${ users[0].address.line_one() }
       - "user_address_line_two": ${ users[0].address.line_two() }
