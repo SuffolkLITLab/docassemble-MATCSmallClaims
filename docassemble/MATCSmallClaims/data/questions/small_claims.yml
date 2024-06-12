@@ -40,7 +40,16 @@ metadata:
   al_weaver_version: "1.10.3"
   generated_on: "2024-06-05"
   languages:
-    - en
+      - English: en
+      - Spanish: es
+      - Arabic: ar
+      - Cape Verdean: kea
+      - Chinese (Cantonese): yue
+      - Chinese (Mandarin): cmn
+      - French: fr
+      - Haitian: ht
+      - Portuguese: pt
+      - Other: other
   jurisdiction: NAM-US-US+MA
   review_date: 2024-06-05
   form_titles:
@@ -84,6 +93,7 @@ code: |
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
   users.gather() 
+  user.language() 
   set_parts(subtitle=str(users))
   trial_court
   set_progress(14)
@@ -131,7 +141,6 @@ code: |
   attorneys[i].address.address
   attorneys[i].phone_number
   attorneys[i].participation = True
-
 ---
 id: Small_claims
 continue button field: small_claims_intro
@@ -153,6 +162,31 @@ subquestion: |
   If you are a plaintiff, you can use this interview to file a statement of small claim and notice.
 
   Most people take about 10 minutes to complete this interview.
+---
+sets:
+  - user.language
+id: language
+question: |
+  What language does ${ user[0] } prefer to speak?
+fields:
+  - Language: user.language
+    datatype: radio
+    choices:
+      - English: en
+      - Spanish: es
+      - Arabic: ar
+      - Cape Verdean: kea
+      - Chinese (Cantonese): yue
+      - Chinese (Mandarin): cmn
+      - French: fr
+      - Haitian: ht
+      - Portuguese: pt
+      - Other: other
+  - Other language: user.language_other
+    show if: 
+      variable: user.language
+      is: other
+
 ---
 id: Plaintiff s Claim
 question: |
@@ -506,7 +540,7 @@ attachment:
              % endif
       - "attorney_name": ${ attorneys[0] }
       - "user_name": ${ users[0] }
-      - "user_language": ${ user[0].person.language () }
+      - "user_language": ${ user[0].user.language () }
       - "attorney_address_line_one": ${ attorneys[0].address.line_one() }
       - "user_address_line_one": ${ users[0].address.line_one() }
       - "user_address_line_two": ${ users[0].address.line_two() }
