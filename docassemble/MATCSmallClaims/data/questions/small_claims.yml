@@ -32,6 +32,7 @@ metadata:
     - "MO-10-00-00-00"
   authors:
     - Nava Ebadollahi
+    - Mark Marotta
   original_form: []
   original_form_published_on: 2024-06-05
   allowed_courts: 
@@ -243,19 +244,13 @@ fields:
   - "Bbo number": bbo_number
     maxlength: 6
     required: True
-
 ---
-id: Military Affidavit 
+id: Military Affidavit
 question: | 
-   Is the defendant in the military?
-
-fields: 
-  - "Not current military": not_current_military
-    datatype: yesnoradio
-  - "Unknown current military": unknown_current_military
-    datatype: yesnoradio
-  - "Is current military": is_current_military
-    datatype: yesnoradio
+  "Is ${ defendants[i] } in the military?"
+fields:
+  - "Does ${ defendants[i]} currently serve in the military?": defendants[i].is_current_military
+    datatype: yesnomaybe
 ---
 id: Are there an opposing party?
 question: |
@@ -565,11 +560,10 @@ attachment:
       - "user_signature__2": ${ users[0].signature }
       - "is_willing_mediation_yes": ${ is_willing_mediation }
       - "is_willing_mediation_no": ${ not is_willing_mediation }
-      - "not_current_military_defendant": ${ not_current_military_defendant }
-      - "not_current_military": ${ not_current_military }
-      - "current_military_defendant": ${ current_military_defendant }
-      - "unknown_current_military": ${ unknown_current_military }
-      - "is_current_military": ${ is_current_military }
-
+      - "not_current_military_defendant": ${ defendants.filter(is_current_military = False) }
+      - "not_current_military": ${ any([person.is_current_military == False for person in defendants])}
+      - "current_military_defendant": ${ defendants.filter(is_current_military = True) }
+      - "unknown_current_military": ${ any([person.is_current_military is None for person in defendants])}
+      - "is_current_military": ${ any([person.is_current_military for person in defendants])}
 
 
