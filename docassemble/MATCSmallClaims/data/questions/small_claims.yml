@@ -21,8 +21,17 @@ metadata:
     
     When you are finished, you will need to:
     
-    1. Submit payment of the filing fee.
+    1. Submit payment of the filing fee (See below).
     2. Await further instructions regarding your case.
+    
+    Amount you are claiming:	    Your filing fee:
+    $500 or less	                $40
+    $501-$2000	                  $50
+    $2001-$5000	                  $100
+    $5001-$7000                  	$150
+    More than $7000*	            $150
+    
+    
   maturity: production
   estimated_completion_minutes: 60
   estimated_completion_delta: 30
@@ -36,21 +45,14 @@ metadata:
   original_form: []
   original_form_published_on: 2024-06-05
   allowed_courts: 
-    - "Small Claims Court"
+    - "Boston Municipal Court"
+    - "Housing Court"
+    - "District Court" 
   typical_role: "plaintiff"
   al_weaver_version: "1.10.3"
   generated_on: "2024-06-05"
   languages:
-      - English: en
-      - Spanish: es
-      - Arabic: ar
-      - Cape Verdean: kea
-      - Chinese (Cantonese): yue
-      - Chinese (Mandarin): cmn
-      - French: fr
-      - Haitian: ht
-      - Portuguese: pt
-      - Other: other
+    - en 
   jurisdiction: NAM-US-US+MA
   review_date: 2024-06-05
   form_titles:
@@ -73,11 +75,12 @@ code: |
   interview_short_title = "File for small claims"
 ---
 code: |
-  al_form_type = "existing_case" 
+  al_form_type = "starts_case"  
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
   - attorneys: ALPeopleList.using(complete_attribute="participation")
+  - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number'])
 ---
 sections:
   - review_small_claims: Review your answers
@@ -88,31 +91,27 @@ comment: |
 id: interview_order_small_claims
 code: |
   # Set the allowed courts for this interview
-  allowed_courts = ['Other', 'Small Claims Court']
+  allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
   nav.set_section("review_small_claims")
   
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
-  users.gather() 
-  user.language() 
+  users.gather()  
   set_parts(subtitle=str(users))
   trial_court
   set_progress(14)
-  docket_number
+  # docket_number
   attorneys.gather()
-  #attorneys[0].address.address
-  #attorneys[0].phone_number
+  if attorneys.number_gathered() > 0: 
+    attorneys[0].address.address
+    attorneys[0].phone_number
   set_progress(28)
   users[0].address.address
   users[0].phone_number
   set_progress(42)
-  defendants.gather()
-  defendants[0].address.address
-  defendants[0].phone_number
-  set_progress(56)
-  defendants[1].address.address
-  defendants[1].phone_number
+  other_parties.gather()
   is_willing_mediation
+  set_progress(56)
   signature_date 
   interview_order_small_claims = True
 ---
@@ -138,10 +137,10 @@ code: |
 ---
 id: attorney
 code: |
-  attorneys[i].name.first
-  attorneys[i].address.address
-  attorneys[i].phone_number
-  attorneys[i].participation = True
+  attorneys[0].name.first
+  attorneys[0].address.address
+  attorneys[0].phone_number
+  attorneys[0].participation = True
 ---
 id: Small_claims
 continue button field: small_claims_intro
@@ -160,40 +159,25 @@ subquestion: |
   1. Submit payment of the filing fee. 
   2. Await further instructions regarding your case.
 
+  Amount you are claiming | Filing Fee 
+            ------|----
+    $500 or less | (Filing fee: $40)
+    $501 - $2000 | (Filing fee: $50)
+    $2001 - $5000| (Filing fee: $100) 
+    $5001 - $7000| (Filing fee: $150)
+    More than $7000 | (Filing fee: $150) *auto accidents only  
+  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting 
+  a Fee Waiver.
+    
   If you are a plaintiff, you can use this interview to file a statement of small claim and notice.
 
-  Most people take about 10 minutes to complete this interview.
----
-sets:
-  - user.language
-id: language
-question: |
-  What language does ${ user[0] } prefer to speak?
-fields:
-  - Language: user.language
-    datatype: radio
-    choices:
-      - English: en
-      - Spanish: es
-      - Arabic: ar
-      - Cape Verdean: kea
-      - Chinese (Cantonese): yue
-      - Chinese (Mandarin): cmn
-      - French: fr
-      - Haitian: ht
-      - Portuguese: pt
-      - Other: other
-  - Other language: user.language_other
-    show if: 
-      variable: user.language
-      is: other
-
+  Most people take about 15 minutes to complete this interview.
 ---
 id: Plaintiff s Claim
 question: |
   Plaintiff's Claim
 subquestion: |
-  Provide basic information and specify the amount that is being sued for.
+  Fill in the amount you are suing for and clearly state your claim so the defendant can understand why he or she is being sued. Provide the date of the event that is the basis of your claim. 
 fields:
   
   - "Defendant owes amount": defendant_owes_amount
@@ -215,14 +199,41 @@ subquestion: |
 fields:
   - "Are you willing mediation": is_willing_mediation
     datatype: yesnoradio
----
-id: who will be on this form
-generic object: ALPeopleList
+---    
+id: Tell us about a court
 question: |
-  Will this form include any ${noun_plural(x.object_name())}?
-fields:
-  - no label: x.there_are_any
-    datatype: yesnoradio
+  % if al_form_type == 'starts_case':
+  What court do you want to file in?
+  % elif al_form_type == 'appeal':
+  What is the name of the trial court your case was originally filed in?
+  % else:
+  What court is your case in?
+  % endif
+subquestion: |
+  % if not al_form_type == 'starts_case':
+  Look at your court paperwork. Match the name listed there.
+  % endif
+  
+  ${ collapse_template(how_to_pick_court_help_template) }  
+  
+  A small claim may be filed in one of three different court departments: District Court, Boston Municipal Court or Housing Court.
+
+  You may bring a small claim in a District or Boston Municipal Court where:
+  - at least one plaintiff lives, works, or has a place of business or
+  - at least one defendant lives, works, or has a place of business or
+  - the rental property is located (if you are filing a claim about a landlord-tenant issue).
+
+  You may bring a small claim in a Housing Court where:
+  - the rental property is located (if you are filing a claim about a landlord-tenant issue).
+
+---
+# id: who will be on this form
+# generic object: ALPeopleList
+# question: |
+#  Will this form include any ${noun_plural(x.object_name())}?
+# fields:
+#  - no label: x.there_are_any
+#    datatype: yesnoradio
 ---
 id: name of the first person
 sets:
@@ -247,39 +258,17 @@ fields:
 ---
 id: Military Affidavit
 question: | 
-  "Is ${ defendants[i] } in the military?"
+  "Is ${ other_parties[i] } in the military?"
 fields:
-  - "Does ${ defendants[i]} currently serve in the military?": defendants[i].is_current_military
+  - "Does ${ other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
----
-id: Are there an opposing party?
-question: |
-  % if al_form_type in ['starts_case','existing_case','appeal'] and user_started_case:
-  Is there a **defendant** or respondent in this case? 
-  % elif al_form_type in ['starts_case','existing_case','appeal']:
-  Is there a **plaintiff** or petitioner in this case?
-  % else:
-  Is there someone on the other side of your dispute?
-  % endif
-subquestion: |
-  % if al_form_type in ['starts_case','existing_case','appeal'] and user_started_case:
-  Answer yes if there is a person or organization you are suing or taking to court.
-  % elif al_form_type in ['starts_case','existing_case','appeal']:
-  You should be able to find out from the paperwork that told you to 
-  go to court.
 
-  Answer yes if someone else has sued you or is bringing you to court.
-  % endif
-fields:
-  - no label: other_parties.there_are_any
-    datatype: yesnoradio
 --- 
 id: persons contact information
-generic object: ALIndividual
 question: |
-  What is ${x}'s phone number?
+  What is ${other_parties[i]}'s phone number?
 fields:
-  - Phone: users[0].phone_number
+  - Phone: other_parties[i].phone_number
 
 ---
 id: preview small_claims
@@ -313,14 +302,14 @@ event: review_small_claims
 question: |
   Review your answers
 review:
-  - Edit: docket_number
+#  - Edit: docket_number
+#    button: |
+#      **Docket number**:
+#      ${ docket_number }
+  - Edit: municipal_court
     button: |
-      **Docket number**:
-      ${ docket_number }
-  - Edit: bmc
-    button: |
-      **Bmc**:
-      ${ bmc }
+      **Municipal court**:
+      ${ municipal_court }
   - Edit: district
     button: |
       **District**:
@@ -520,8 +509,8 @@ attachment:
   skip undefined: True
   pdf template file: small_claims.pdf
   fields:
-      - "docket_number": ${ docket_number }
-      - "bmc": | 
+      # - "docket_number": ${ docket_number }
+      - "municipal": | 
              % if trial_court.department == "Boston Municipal Court": 
              ${ trial_court.division } 
              % endif 
@@ -535,7 +524,6 @@ attachment:
              % endif
       - "attorney_name": ${ attorneys[0] }
       - "user_name": ${ users[0] }
-      - "user_language": ${ user[0].user.language () }
       - "attorney_address_line_one": ${ attorneys[0].address.line_one() }
       - "user_address_line_one": ${ users[0].address.line_one() }
       - "user_address_line_two": ${ users[0].address.line_two() }
