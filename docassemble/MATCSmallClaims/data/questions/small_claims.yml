@@ -29,8 +29,7 @@ metadata:
     $501-$2000	                  $50
     $2001-$5000	                  $100
     $5001-$7000                  	$150
-    More than $7000*	            $150
-    
+    More than $7000 	            $150
     
   maturity: production
   estimated_completion_minutes: 60
@@ -160,18 +159,18 @@ subquestion: |
   2. Await further instructions regarding your case.
 
   Amount you are claiming | Filing Fee 
-            ------|----
+           ------|----
     $500 or less | (Filing fee: $40)
     $501 - $2000 | (Filing fee: $50)
     $2001 - $5000| (Filing fee: $100) 
     $5001 - $7000| (Filing fee: $150)
-    More than $7000 | (Filing fee: $150) *auto accidents only  
-  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting 
-  a Fee Waiver.
+    More than $7000 | (Filing fee: $150)   
+  
+  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it here [Fee Waive](https://www.mass.gov/indigency-waiver-of-court-fees).
     
   If you are a plaintiff, you can use this interview to file a statement of small claim and notice.
 
-  Most people take about 15 minutes to complete this interview.
+  Most people take about 15 minutes to complete this interview. 
 ---
 id: Plaintiff s Claim
 question: |
@@ -197,7 +196,7 @@ subquestion: |
   The mediator will assist the parties in trying to resolve the dispute on mutually agreed terms. The Plaintiff must notify the court if he or she desires mediation. The defendant may consent to mediation on the trial date. 
   
 fields:
-  - "Are you willing mediation": is_willing_mediation
+  - "Are you willing to mediate?": is_willing_mediation
     datatype: yesnoradio
 ---    
 id: Tell us about a court
