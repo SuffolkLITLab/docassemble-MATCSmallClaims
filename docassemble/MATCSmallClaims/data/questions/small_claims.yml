@@ -82,6 +82,9 @@ objects:
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number'])
 ---
 sections:
+  - preliminary_information: Provide preliminary information
+  - plaintiff_s_claim: What is your claim
+  - mediation: Are you seeking mediation
   - review_small_claims: Review your answers
 ---
 #################### Interview order #####################
@@ -91,7 +94,7 @@ id: interview_order_small_claims
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
-  nav.set_section("review_small_claims")
+  nav.set_section("preliminary_information")
   
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
@@ -109,8 +112,20 @@ code: |
   users[0].phone_number
   set_progress(42)
   other_parties.gather()
+    ####### plaintiff's claim####
+  ######
+  nav.set_section("plaintiff_s_claim")
+  defendant_owes_amount
+  defendant_court_costs_amount
+  reason_for_suing_defendant
+  #######
+  nav.set_section("mediation")
   is_willing_mediation
   set_progress(56)
+  ######
+  #ATTORNEY IN ORDER#
+  #######
+  other_parties[0].is_current_military
   signature_date 
   interview_order_small_claims = True
 ---
@@ -257,9 +272,9 @@ fields:
 ---
 id: Military Affidavit
 question: | 
-  "Is ${ other_parties[i] } in the military?"
+  Is ${other_parties[0]} in the military?
 fields:
-  - "Does ${ other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
+  - "Does ${other_parties[0]} currently serve in the military?": other_parties[0].is_current_military
     datatype: yesnomaybe
 
 --- 
