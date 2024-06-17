@@ -112,20 +112,15 @@ code: |
   users[0].phone_number
   set_progress(42)
   other_parties.gather()
-    ####### plaintiff's claim####
-  ######
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
   defendant_court_costs_amount
   reason_for_suing_defendant
-  #######
   nav.set_section("mediation")
   is_willing_mediation
   set_progress(56)
-  ######
-  #ATTORNEY IN ORDER#
-  #######
   other_parties[0].is_current_military
+  users[0].signature
   signature_date 
   interview_order_small_claims = True
 ---
@@ -181,7 +176,7 @@ subquestion: |
     $5001 - $7000| (Filing fee: $150)
     More than $7000 | (Filing fee: $150)   
   
-  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it here [Fee Waive](https://www.mass.gov/indigency-waiver-of-court-fees).
+  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it here [Fee Waiver](https://www.mass.gov/indigency-waiver-of-court-fees).
     
   If you are a plaintiff, you can use this interview to file a statement of small claim and notice.
 
@@ -369,6 +364,10 @@ review:
     button: |
       **Reason for suing defendant**:
       > ${ single_paragraph(reason_for_suing_defendant) }
+  - Edit: user.signature
+    button: |
+      **Signature**:
+      ${ user }
   - Edit: signature_date
     button: |
       **Date of signature**:
