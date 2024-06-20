@@ -566,5 +566,3 @@ attachment:
       - "current_military_defendant": ${ defendants.filter(is_current_military = True) }
       - "unknown_current_military": ${ any([person.is_current_military is None for person in defendants])}
       - "is_current_military": ${ any([person.is_current_military for person in defendants])}
-
-
