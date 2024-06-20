@@ -112,6 +112,9 @@ code: |
   users[0].phone_number
   set_progress(42)
   other_parties.gather()
+  defendants
+  other_parties[0].address.address
+  other_parties[0].phone_number
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
   defendant_court_costs_amount
@@ -265,19 +268,38 @@ fields:
     maxlength: 6
     required: True
 ---
+id: names of opposing parties
+question: |
+  % if user_started_case:
+  Name of ${ ordinal(i) } **defendant** or respondent in this
+  matter
+  % else:
+  Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
+  % endif
+fields:
+  - code: |
+      other_parties[i].name_fields(person_or_business='unsure')
+---
+id: persons address
+generic object: ALIndividual
+question: |
+  What is ${ x.possessive('address') }?
+fields:
+  - code: |
+      x.address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
+---
+id: persons contact information
+question: |
+  What is ${other_parties[i]}'s phone number?
+fields:
+  - Phone: other_parties[i].phone_number
+---
 id: Military Affidavit
 question: | 
   Is ${other_parties[0]} in the military?
 fields:
   - "Does ${other_parties[0]} currently serve in the military?": other_parties[0].is_current_military
     datatype: yesnomaybe
-
---- 
-id: persons contact information
-question: |
-  What is ${other_parties[i]}'s phone number?
-fields:
-  - Phone: other_parties[i].phone_number
 
 ---
 id: preview small_claims
@@ -523,7 +545,7 @@ attachment:
   pdf template file: small_claims.pdf
   fields:
       # - "docket_number": ${ docket_number }
-      - "municipal": | 
+      - "bmc": | 
              % if trial_court.department == "Boston Municipal Court": 
              ${ trial_court.division } 
              % endif 
