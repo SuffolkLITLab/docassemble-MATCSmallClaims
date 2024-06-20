@@ -120,8 +120,9 @@ code: |
   is_willing_mediation
   set_progress(56)
   other_parties[0].is_current_military
+  small_claims_preview_question 
+  users[0].states_above_true
   users[0].signature
-  signature_date 
   interview_order_small_claims = True
 ---
 ###################### Main order ######################
@@ -271,7 +272,6 @@ question: |
 fields:
   - "Does ${other_parties[0]} currently serve in the military?": other_parties[0].is_current_military
     datatype: yesnomaybe
-
 --- 
 id: persons contact information
 question: |
