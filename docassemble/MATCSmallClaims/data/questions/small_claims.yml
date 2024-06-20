@@ -123,8 +123,9 @@ code: |
   is_willing_mediation
   set_progress(56)
   other_parties[0].is_current_military
+  small_claims_preview_question 
+  users[0].states_above_true
   users[0].signature
-  signature_date 
   interview_order_small_claims = True
 ---
 ###################### Main order ######################
@@ -277,6 +278,8 @@ question: |
   Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
   % endif
 fields:
+  - "Does ${other_parties[0]} currently serve in the military?": other_parties[0].is_current_military
+    datatype: yesnomaybe
   - code: |
       other_parties[i].name_fields(person_or_business='unsure')
 ---
