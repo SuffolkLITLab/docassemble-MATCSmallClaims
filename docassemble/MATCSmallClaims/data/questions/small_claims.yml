@@ -99,6 +99,9 @@ code: |
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
   users.gather()  
+  users[0].address.address
+  users[0].phone_number
+  set_progress(28)
   set_parts(subtitle=str(users))
   trial_court
   set_progress(14)
@@ -107,9 +110,6 @@ code: |
   if attorneys.number_gathered() > 0: 
     attorneys[0].address.address
     attorneys[0].phone_number
-  set_progress(28)
-  users[0].address.address
-  users[0].phone_number
   set_progress(42)
   other_parties.gather()
   defendants
@@ -300,9 +300,13 @@ fields:
 id: Military Affidavit
 question: | 
   Is ${other_parties[0]} in the military?
+subquestion: |
+  Pursuant to the Service Members Civil Relief Act 50 USC §3931, you state under the pains and penalties of perjury that: 
 fields:
   - "Does ${other_parties[0]} currently serve in the military?": other_parties[0].is_current_military
     datatype: yesnomaybe
+  - "Required facts in support of military affidavit": military_affidavit_facts
+    input type: area
 ---
 id: preview small_claims
 question: |
@@ -420,6 +424,10 @@ review:
     button: |
       **Is current military**:
       ${ is_current_military }
+  - Edit: Military_affidavit_facts
+    button: |
+      **Military affidavit facts**
+      ${ Military_affidavit_facts }
 ---
 continue button field: attorneys.revisit
 question: |
@@ -589,3 +597,4 @@ attachment:
       - "current_military_defendant": ${ defendants.filter(is_current_military = True) }
       - "unknown_current_military": ${ any([person.is_current_military is None for person in defendants])}
       - "is_current_military": ${ any([person.is_current_military for person in defendants])}
+      - "military_affidavit_facts": ${ military_affidavit_facts }
