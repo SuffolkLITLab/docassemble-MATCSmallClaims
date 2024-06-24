@@ -303,7 +303,6 @@ question: |
 fields:
   - "Does ${other_parties[0]} currently serve in the military?": other_parties[0].is_current_military
     datatype: yesnomaybe
-
 ---
 id: preview small_claims
 question: |
@@ -474,7 +473,6 @@ edit:
   - phone_number
   - signature
 confirm: True
-
 ---
 continue button field: defendants.revisit
 question: |
