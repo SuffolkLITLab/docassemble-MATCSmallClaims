@@ -82,9 +82,13 @@ objects:
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number'])
 ---
 sections:
-  - preliminary_information: Provide preliminary information
-  - plaintiff_s_claim: What is your claim
-  - mediation: Are you seeking mediation
+  - preliminary_information: Your information
+  - court_selection: Court selection
+  - attorney_question: Attorney information
+  - defendant_question: Defendant information
+  - plaintiff_s_claim: Your claim
+  - mediation: Mediation
+  - military_questions: Military affidavit
   - review_small_claims: Review your answers
 ---
 #################### Interview order #####################
@@ -95,14 +99,15 @@ code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
   nav.set_section("preliminary_information")
-  
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
   users.gather()  
+  nav.set_section("court_ selection")
   set_parts(subtitle=str(users))
   trial_court.department
   set_progress(14)
   # docket_number
+  nav.set_section("attorney_question")
   attorneys.gather()
   if attorneys.number_gathered() > 0: 
     attorneys[0].address.address
@@ -111,6 +116,7 @@ code: |
   users[0].address.address
   users[0].phone_number
   set_progress(42)
+  nav.set_section("defendant question")
   other_parties.gather()
   defendants
   other_parties[0].address.address
@@ -122,8 +128,10 @@ code: |
   nav.set_section("mediation")
   is_willing_mediation
   set_progress(56)
+  nav.set_section("military_questions")
   other_parties[0].is_current_military
   military_affidavit_facts
+  nav.set_section("review_small_claims")
   small_claims_preview_question 
   users[0].states_above_true
   users[0].signature
@@ -304,13 +312,6 @@ question: |
 fields:
   - "Does ${other_parties[0]} currently serve in the military?": other_parties[0].is_current_military
     datatype: yesnomaybe
----
-id: Military Affidavit Facts
-question: |
-  Military affidavit facts
-subquestion: |
-  List the required facts in support of the military affidavit 
-fields:
   - "Military affidavit facts": military_affidavit_facts
     input type: area
     maxlength: 1395
