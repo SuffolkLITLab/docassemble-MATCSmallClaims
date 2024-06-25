@@ -100,7 +100,7 @@ code: |
   user_ask_role = "plaintiff"
   users.gather()  
   set_parts(subtitle=str(users))
-  trial_court
+  trial_court.department
   set_progress(14)
   # docket_number
   attorneys.gather()
@@ -123,6 +123,7 @@ code: |
   is_willing_mediation
   set_progress(56)
   other_parties[0].is_current_military
+  military_affidavit_facts
   small_claims_preview_question 
   users[0].states_above_true
   users[0].signature
@@ -304,6 +305,16 @@ fields:
   - "Does ${other_parties[0]} currently serve in the military?": other_parties[0].is_current_military
     datatype: yesnomaybe
 ---
+id: Military Affidavit Facts
+question: |
+  Military affidavit facts
+subquestion: |
+  List the required facts in support of the military affidavit 
+fields:
+  - "Military affidavit facts": military_affidavit_facts
+    input type: area
+    maxlength: 1395
+---
 id: preview small_claims
 question: |
   Preview your form before you sign it
@@ -388,7 +399,7 @@ review:
     button: |
       **Reason for suing defendant**:
       > ${ single_paragraph(reason_for_suing_defendant) }
-  - Edit: user.signature
+  - Edit: user_signature
     button: |
       **Signature**:
       ${ user }
@@ -420,6 +431,10 @@ review:
     button: |
       **Is current military**:
       ${ is_current_military }
+  - Edit: military_affidavit_facts
+    button: |
+      **Required facts in support of military affidavit**:
+      > ${ single_paragraph(military_affidavit_facts) }
 ---
 continue button field: attorneys.revisit
 question: |
@@ -546,18 +561,12 @@ attachment:
   pdf template file: small_claims.pdf
   fields:
       # - "docket_number": ${ docket_number }
-      - "bmc": | 
-             % if trial_court.department == "Boston Municipal Court": 
-             ${ trial_court.division } 
-             % endif 
-      - "district": | 
-             % if trial_court.department == "District Court": 
-             ${ trial_court.division } 
-             % endif
-      - "housing": | 
-             % if trial_court.department == "Housing Court": 
-             ${ trial_court.division } 
-             % endif
+      - "bmc": |
+             ${ trial_court.department == "Boston Municipal Court"  }
+      - "district": |
+             ${ trial_court.department == "District Court" } 
+      - "housing": |
+             ${ trial_court.department == "Housing Court" }
       - "attorney_name": ${ attorneys[0] }
       - "user_name": ${ users[0] }
       - "attorney_address_line_one": ${ attorneys[0].address.line_one() }
@@ -578,10 +587,8 @@ attachment:
       - "defendant_owes_amount": ${ currency(defendant_owes_amount) }
       - "defendant_court_costs_amount": ${ currency(defendant_court_costs_amount) }
       - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
-      - "signature_date__1": ${ signature_date }
-      - "signature_date__2": ${ signature_date }
-      - "user_signature__1": ${ users[0].signature }
-      - "user_signature__2": ${ users[0].signature }
+      - "signature_date": ${ signature_date }
+      - "user_signature": ${ users[0].signature }
       - "is_willing_mediation_yes": ${ is_willing_mediation }
       - "is_willing_mediation_no": ${ not is_willing_mediation }
       - "not_current_military_defendant": ${ defendants.filter(is_current_military = False) }
@@ -589,3 +596,4 @@ attachment:
       - "current_military_defendant": ${ defendants.filter(is_current_military = True) }
       - "unknown_current_military": ${ any([person.is_current_military is None for person in defendants])}
       - "is_current_military": ${ any([person.is_current_military for person in defendants])}
+      - "military_affidavit_facts": ${ military_affidavit_facts }
