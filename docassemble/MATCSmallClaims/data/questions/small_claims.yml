@@ -513,10 +513,10 @@ review:
     button: |
       **Is current military**:
       ${ is_current_military }
-  - Edit: Military_affidavit_facts
+  - Edit: military_affidavit_facts
     button: |
-      **Military affidavit facts**
-      ${ Military_affidavit_facts }
+      **military affidavit facts**
+      ${ military_affidavit_facts }
 ---
 continue button field: attorneys.revisit
 question: |
