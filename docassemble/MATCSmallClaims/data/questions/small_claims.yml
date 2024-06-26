@@ -102,7 +102,7 @@ code: |
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
   users.gather()  
-  nav.set_section("court_ selection")
+  nav.set_section("court_selection")
   set_parts(subtitle=str(users))
   trial_court.department
   set_progress(14)
@@ -364,6 +364,10 @@ review:
     button: |
       **Housing**:
       ${ housing }
+  - Edit: court_division
+    button: |
+      **Court division**:
+      ${ court_division }
   - Edit: attorneys.revisit
     button: |
       **Attorneys**
@@ -569,6 +573,7 @@ attachment:
              ${ trial_court.department == "District Court" } 
       - "housing": |
              ${ trial_court.department == "Housing Court" }
+      - "court_division": ${ trial_court.division }
       - "attorney_name": ${ attorneys[0] }
       - "user_name": ${ users[0] }
       - "attorney_address_line_one": ${ attorneys[0].address.line_one() }
