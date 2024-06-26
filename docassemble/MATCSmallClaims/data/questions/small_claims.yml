@@ -80,6 +80,7 @@ objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number'])
+  - location_of_claim: ALAddress
 ---
 sections:
   - preliminary_information: Your information
@@ -215,9 +216,9 @@ subquestion: |
 
   ${ collapse_template(why_contact_info_needed_template) }
 fields:  
-  - Mobile number: users[0].mobile_number
+  - Mobile number: users[0].phone_number
     required: True
-  - Other phone number: users[0].phone_number
+  - Other phone number: users[0].mobile_number
     required: False
   - Other ways to reach you: users[0].other_contact_method
     input type: area
@@ -270,6 +271,10 @@ fields:
   - "Reason for suing defendant": reason_for_suing_defendant
     input type: area
     maxlength: 1395
+  - note: "Location of claim" 
+  - code: |
+      location_of_claim.address_fields()
+   
 ---
 id: Additional Information
 question: |
@@ -428,7 +433,7 @@ code: |
   # for matching address to court. Edit if court venue is based on 
   # a different address than the user's
   [user.address.address for user in users.complete_elements()]
-  addresses_to_search = [user.address for user in users.complete_elements()]
+  addresses_to_search = [user.address for user in users.complete_elements()]+[defendant.address for defendant in other_parties.complete_elements()]+[location_of_claim]
 ---
 id: small claims review screen
 event: review_small_claims
