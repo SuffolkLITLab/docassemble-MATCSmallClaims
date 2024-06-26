@@ -135,6 +135,7 @@ code: |
   small_claims_preview_question 
   users[0].states_above_true
   users[0].signature
+  signature_date
   interview_order_small_claims = True
 ---
 ###################### Main order ######################
