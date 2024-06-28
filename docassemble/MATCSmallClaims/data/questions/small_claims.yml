@@ -17,7 +17,8 @@ metadata:
     Before you get started, please gather:
     
     1. Attorney and defendant information.
-    2. Your claim which clearly states why the defendant is being sued.
+    2. Your claim which clearly states why the defendant is being sued.3
+    3. The defendant(s) military status. 
     
     When you are finished, you will need to:
     
@@ -351,8 +352,13 @@ fields:
   - "Bbo number": bbo_number
     maxlength: 6
     required: True
-
+    
 ---
+sets:
+  - other_parties[i].name.first
+  - other_parties[i].name.last
+  - other_parties[i].name.middle
+  - other_parties[i].name.suffix
 id: names of opposing parties
 question: |
   % if user_started_case:
@@ -369,12 +375,11 @@ subquestion: |
   Verify the name by calling the city or town hall where the business is located.
 
   Any entity that does business under a trade name is required to register in the local city or town clerk's office where the business is located.
+  
+fields:
+  - code: |
+      other_parties[i].name_fields(person_or_business='unsure')
 
-#fields:
-#  - "Does ${other_parties[0]} currently serve in the military?": #other_parties[0].is_current_military
-  #  datatype: yesnomaybe
- # - code: |
-    #  other_parties[i].name_fields(person_or_business='unsure')
 ---
 id: persons address
 generic object: ALIndividual
