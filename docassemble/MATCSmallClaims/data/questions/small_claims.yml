@@ -102,14 +102,12 @@ code: |
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
   users.gather()  
-  
   users[0].address.address
   users[0].phone_number
   set_progress(28)
   set_parts(subtitle=str(users))
   nav.set_section("court_selection")
   set_parts(subtitle=str(users))
-  trial_court.department
   set_progress(14)
   # docket_number
   nav.set_section("attorney_question")
@@ -123,6 +121,7 @@ code: |
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
+  trial_court.department
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
   defendant_court_costs_amount
@@ -178,6 +177,7 @@ subquestion: |
   
   1. Attorney and defendant information.
   2. Your claim which clearly states why the defendant is being sued.
+  3. The defendant(s) military status. 
   
   When you are finished, you will need to:
   
@@ -394,7 +394,11 @@ id: Military Affidavit
 question: | 
   Is ${other_parties[i]} in the military?
 subquestion: |
-  If you know the defendant’s social security number or birth date, you may determine whether he or she is on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). 
+  If you know the defendant’s social security number or birth date, you may determine whether he or she is on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Webste, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website). You must attach a copy of those search results to your Military Affidavit facts below. 
+  
+  
+  However, if you do not use the SCRA Website, please provide specific facts that support your statement as to the military status of the party(ies). You may include facts that you know through your contact or communications with the party(ies). You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status of the party(ies). Please attach any written correspondence you receive from the military in support of your statement. 
+  
   
    If you are unable to determine whether the defendant is on active military duty and the defendant fails to appear, the court may require you to post a bond or may issue other orders to protect the rights of the defendant if he or she is on active military duty.
   
@@ -469,18 +473,18 @@ review:
     button: |
       **Court division**:
       ${ court_division }
-  - Edit: attorneys.revisit
-    button: |
-      **Attorneys**
-
-      % for item in attorneys:
-        * ${ item }
-      % endfor
   - Edit: users.revisit
     button: |
       **Users**
 
       % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: attorneys.revisit
+    button: |
+      **Attorneys**
+
+      % for item in attorneys:
         * ${ item }
       % endfor
   - Edit: bbo_number
@@ -506,14 +510,6 @@ review:
     button: |
       **Reason for suing defendant**:
       > ${ single_paragraph(reason_for_suing_defendant) }
-  - Edit: user_signature
-    button: |
-      **Signature**:
-      ${ user }
-  - Edit: signature_date
-    button: |
-      **Date of signature**:
-      ${ signature_date }
   - Edit: is_willing_mediation
     button: |
       **Is willing mediation**:
@@ -542,6 +538,14 @@ review:
     button: |
       **Required facts in support of military affidavit**:
       > ${ single_paragraph(military_affidavit_facts) }
+  - Edit: user_signature
+    button: |
+      **Signature**:
+      ${ user }
+  - Edit: signature_date
+    button: |
+      **Date of signature**:
+      ${ signature_date }
 ---
 continue button field: attorneys.revisit
 question: |
