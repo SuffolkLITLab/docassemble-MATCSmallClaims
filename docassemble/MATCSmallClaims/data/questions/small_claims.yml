@@ -2,6 +2,7 @@ include:
   - docassemble.AssemblyLine:assembly_line.yml 
   - docassemble.MassAccess:massaccess.yml
   - docassemble.demo:data/questions/examples/cards.yml
+  - docassemble.ALToolbox:collapse_template.yml
 ---
 metadata:
   title: >-
@@ -234,6 +235,23 @@ validation code: |
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
 ---
+template: maximum_amount
+subject:  |
+  What is the maximum amount for a small claim?  
+content:  |
+
+  The base amount you are suing for (including the value of property) must be $7,000 or less. There are two exceptions:
+  
+  1. If your claim is based on property damage from an automobile accident, the amount of your claim can be more than $7,000.
+  
+  2. If you are suing for unfair and deceptive practices under Chapter 93A, or under the Security Deposit Statute, the court may award additional damages above the $7,000 limit. The base amount of your claim must still be $7,000 or less.
+---
+template: added_penalties
+subject:  |
+  Added penalties by statute
+content:  |
+  If a law allows you to seek double or triple the amount of your claim, then you must include this specific information in your statement of claim.
+---
 id: Plaintiff s Claim
 question: |
   Plaintiff's Claim
@@ -244,19 +262,8 @@ subquestion: |
 
   Fill in the amount you are suing for and clearly state your claim so the defendant can understand why they are being sued. Provide the date of the event that is the basis of your claim and requests for relief. This provides the Defendant with a breakdown of the amount being claimed and helps the court decide the amount of any award.
   
-  Added penalties by statute:
-  If a law allows you to seek double or triple the amount of your claim, then you must include this specific information in your statement of claim. 
-
-  Added penalties by statute:
-  If a law allows you to seek double or triple the amount of your claim, then you must include this specific information in your statement of claim.
-
-  What is the maximum amount for a small claim?
-
-  The base amount you are suing for (including the value of property) must be $7,000 or less. There are two exceptions:
-  
-  1. If your claim is based on property damage from an automobile accident, the amount of your claim can be more than $7,000.
-  
-  2. If you are suing for unfair and deceptive practices under Chapter 93A, or under the Security Deposit Statute, the court may award additional damages above the $7,000 limit. The base amount of your claim must still be $7,000 or less.
+  ${ collapse_template(maximum_amount) } 
+  ${ collapse_template(added_penalties) } 
 
 fields: 
   - "Defendant owes amount": defendant_owes_amount
