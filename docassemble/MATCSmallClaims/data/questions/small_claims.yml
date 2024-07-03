@@ -133,7 +133,7 @@ code: |
   is_willing_mediation
   trial_court
   set_progress(56)
-  other_parties[0].is_current_military
+  other_parties[i].is_current_military
   military_affidavit_facts
   nav.set_section("review_small_claims")
   small_claims_preview_question 
@@ -418,7 +418,7 @@ subquestion: |
 fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
-  - "Required facts in support of military affidavit": military_affidavit_facts
+  - "Required facts in support of military affidavit": other_parties.military_affidavit_facts[i]
     input type: area
     maxlength: 1395
 
@@ -553,7 +553,7 @@ review:
   - Edit: military_affidavit_facts
     button: |
       **Required facts in support of military affidavit**:
-      > ${ single_paragraph(military_affidavit_facts) }
+      > ${ single_paragraph(other_parties[i].military_affidavit_facts) }
   - Edit: user_signature
     button: |
       **Signature**:
@@ -723,4 +723,4 @@ attachment:
       - "current_military_defendant": ${ defendants.filter(is_current_military = True) }
       - "unknown_current_military": ${ any([person.is_current_military is None for person in defendants])}
       - "is_current_military": ${ any([person.is_current_military for person in defendants])}
-      - "military_affidavit_facts": ${ military_affidavit_facts }
+      - "military_affidavit_facts": ${ other_parties[0].military_affidavit_facts + ";" + other_parties[1].military_affidavit_facts }
