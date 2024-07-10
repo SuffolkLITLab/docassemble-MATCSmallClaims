@@ -162,6 +162,23 @@ code: |
   )
   small_claims_download
 ---
+features:
+  progress bar: True
+---
+question: Are you doing well?
+yesno: user_is_well
+progress: 20
+---
+question: Done with the interview.
+subquestion: |
+  % if user_is_well:
+  I am glad you are doing well.
+  % else:
+  I am sorry to hear that!
+  % endif
+progress: 100
+mandatory: True
+---
 id: attorney
 code: |
   attorneys[0].name.first
@@ -219,7 +236,7 @@ subquestion: |
 fields:  
   - Mobile number: users[0].phone_number
     required: True
-  - Other phone number: users[0].mobile_number
+  - Email: users[0].email_address
     required: False
   - Other ways to reach you: users[0].other_contact_method
     input type: area
@@ -367,7 +384,7 @@ sets:
 id: names of opposing parties
 question: |
   % if user_started_case:
-  Name of ${ ordinal(i) } **defendant** or respondent in this
+  Name of ${ ordinal(i) } **defendant** in this
   matter
   % else:
   Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
@@ -418,7 +435,7 @@ subquestion: |
 fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
-  - "Required facts in support of military affidavit": other_parties.military_affidavit_facts[i]
+  - "Required facts in support of military affidavit": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
 
