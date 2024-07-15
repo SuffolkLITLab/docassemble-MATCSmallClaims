@@ -102,9 +102,8 @@ code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
   nav.set_section("preliminary_information")
-  user_role = "plaintiff"
-  user_ask_role = "plaintiff"
-  users.gather()  
+  al_person_answering
+  users.gather()
   users[0].address.address
   users[0].phone_number
   set_progress(28)
@@ -129,6 +128,7 @@ code: |
   defendant_owes_amount
   defendant_court_costs_amount
   reason_for_suing_defendant
+  location_of_claim
   nav.set_section("mediation")
   is_willing_mediation
   trial_court
@@ -178,6 +178,16 @@ subquestion: |
   % endif
 progress: 100
 mandatory: True
+---
+id: who_is_filling_out_this_form
+question: | 
+  Who is filling out this form?
+fields:
+  - I am: al_person_answering
+    datatype: radio
+    choices: 
+      - a defendant: user 
+      - an attorney: attorney
 ---
 id: attorney
 code: |
@@ -292,9 +302,26 @@ fields:
   - "Reason for suing defendant": reason_for_suing_defendant
     input type: area
     maxlength: 1395
-  - note: "Location of claim" 
+---
+id: location_of_claim
+sets:
+  - location_of_claim.city
+question: |
+  What is the location of the claim?
+fields:
+  - Address: location_of_claim
+    datatype: object_radio
+    choices:
+      - users[0].address
+      - other_parties[0].address
+    object labeler: |
+      lambda y: y.on_one_line()
+    none of the above: |
+      Somewhere else
+    default: users[0].address
+    disable others: True
   - code: |
-      location_of_claim.address_fields()
+     location_of_claim.address_fields(default_state=AL_DEFAULT_STATE)
 ---
 id: Additional Information
 question: |
@@ -490,6 +517,10 @@ subquestion: |
   If the Defendant(s) does not come to the hearing, the Clerk-Magistrate may still require you to prove the value of the damages that you have submitted in your claim. You should be prepared to provide evidence on damages any time you are scheduled to be in court.
   
 review:
+  - Edit: who_is_filling_out_this_form
+    button: |
+      **Who is filling out this form**:
+      ${ who_is_filling_out_this_form }
   - Edit: municipal_court
     button: |
       **Municipal court**:
@@ -543,6 +574,10 @@ review:
     button: |
       **Reason for suing defendant**:
       > ${ single_paragraph(reason_for_suing_defendant) }
+  - Edit: location_of_claim
+    button: |
+      **Location of claim**:
+      ${ location_of_claim }
   - Edit: is_willing_mediation
     button: |
       **Is willing mediation**:
@@ -741,3 +776,5 @@ attachment:
       - "unknown_current_military": ${ any([person.is_current_military is None for person in defendants])}
       - "is_current_military": ${ any([person.is_current_military for person in defendants])}
       - "military_affidavit_facts": ${ other_parties[0].military_affidavit_facts + ";" + other_parties[1].military_affidavit_facts }
+      - "user_is_defendant": ${ al_person_answering == "defendant" }
+      - "user_is_attorney": ${ al_person_answering == "attorney" }
