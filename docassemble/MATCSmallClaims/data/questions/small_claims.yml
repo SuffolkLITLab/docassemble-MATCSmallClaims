@@ -123,12 +123,12 @@ code: |
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
+  location_of_claim.city
   trial_court.department
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
   defendant_court_costs_amount
   reason_for_suing_defendant
-  location_of_claim
   nav.set_section("mediation")
   is_willing_mediation
   trial_court
@@ -186,8 +186,8 @@ fields:
   - I am: al_person_answering
     datatype: radio
     choices: 
-      - a defendant: user 
-      - an attorney: attorney
+      - a self-represented plaintiff: user 
+      - an attorney filing on behalf of a plaintiff: attorney
 ---
 id: attorney
 code: |
@@ -305,6 +305,7 @@ fields:
 ---
 id: location_of_claim
 sets:
+  - location_of_claim.address
   - location_of_claim.city
 question: |
   What is the location of the claim?
@@ -440,14 +441,28 @@ fields:
 ---
 id: persons contact information
 question: |
-  What is ${other_parties[i]}'s phone number?
+  What is ${other_parties[i]}'s contact information?
 fields:
   - Phone: other_parties[i].phone_number
+  - Email: other_parties[i].email_address
 ---
 id: Military Affidavit
 question: | 
   Is ${other_parties[i]} in the military?
-
+fields:
+  - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
+    datatype: yesnomaybe
+  - "Required facts in support of military affidavit": other_parties[i].military_affidavit_facts
+    input type: area
+    maxlength: 1395
+comment: |
+  % if other_parties.number() > 1: 
+  other_parties.as_noun("party")   
+  https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
+---
+id: Military Affidavit Help
+question: |
+  Information to determine whether ${other_parties[i]} is in the military.
 subquestion: |
   If you know the defendant’s social security number or birth date, you may determine whether they are on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Webste, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website). You must attach a copy of those search results to your Military Affidavit facts below. 
   
@@ -458,18 +473,16 @@ subquestion: |
    If you are unable to determine whether the defendant is on active military duty and the defendant fails to appear, the court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
   
   Pursuant to the Service Members Civil Relief Act 50 USC §3931, you state under the pains and penalties of perjury that: 
-  
+---
+id: Military Affidavit Again
+question: | 
+  Is ${other_parties[i]} in the military?
 fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
   - "Required facts in support of military affidavit": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
-
-comment: |
-  % if other_parties.number() > 1: 
-  other_parties.as_noun("party")   
-  https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
 ---
 id: preview small_claims
 question: |
