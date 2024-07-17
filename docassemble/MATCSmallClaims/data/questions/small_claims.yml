@@ -123,6 +123,8 @@ code: |
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
+  other_parties[0].is_current_military
+  other_parties[0].military_affidavit_facts
   location_of_claim.city
   trial_court.department
   nav.set_section("plaintiff_s_claim")
@@ -133,12 +135,9 @@ code: |
   is_willing_mediation
   trial_court
   set_progress(56)
-  other_parties[i].is_current_military
-  military_affidavit_facts
   nav.set_section("review_small_claims")
   small_claims_preview_question 
   users[0].states_above_true
-  users[0].signature
   users[0].signature
   interview_order_small_claims = True
 ---
@@ -452,7 +451,7 @@ question: |
 fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
-  - "Required facts in support of military affidavit": other_parties[i].military_affidavit_facts
+  - "How do you know ${other_parties[i]} is in the military?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
 comment: |
@@ -480,7 +479,7 @@ question: |
 fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
-  - "Required facts in support of military affidavit": other_parties[i].military_affidavit_facts
+  - "How do you know ${other_parties[i]} military status?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
 ---
@@ -615,7 +614,7 @@ review:
     button: |
       **Is current military**:
       ${ is_current_military }
-  - Edit: military_affidavit_facts
+  - Edit: other_parties[i].military_affidavit_facts
     button: |
       **Required facts in support of military affidavit**:
       > ${ single_paragraph(other_parties[i].military_affidavit_facts) }
@@ -788,6 +787,6 @@ attachment:
       - "current_military_defendant": ${ defendants.filter(is_current_military = True) }
       - "unknown_current_military": ${ any([person.is_current_military is None for person in defendants])}
       - "is_current_military": ${ any([person.is_current_military for person in defendants])}
-      - "military_affidavit_facts": ${ other_parties[0].military_affidavit_facts + ";" + other_parties[1].military_affidavit_facts }
+      - "other_parties[i].military_affidavit_facts": ${ other_parties[0].military_affidavit_facts + ";" + other_parties[1].military_affidavit_facts }
       - "user_is_defendant": ${ al_person_answering == "defendant" }
       - "user_is_attorney": ${ al_person_answering == "attorney" }
