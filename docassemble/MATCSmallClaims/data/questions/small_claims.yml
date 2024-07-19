@@ -123,7 +123,6 @@ code: |
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
-  other_parties[0].is_current_military
   other_parties[0].military_affidavit_facts
   location_of_claim.city
   trial_court.department
@@ -472,37 +471,26 @@ question: |
 fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
-  - "How do you know ${other_parties[i]} is in the military?": other_parties[i].military_affidavit_facts
+  - note: |
+      If you know the defendant’s social security number or birth date, you may determine whether they are on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Webste, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website). You must attach a copy of those search results to your Military Affidavit facts below. However, if you do not use the SCRA Website, provide specific facts that support your statement as to the military status of the party(ies). You may include facts that you know through your contact or communications with the party(ies). You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status of the party(ies). Please attach any written correspondence you receive from the military in support of your statement. If you are unable to determine whether the defendant is on active military duty and the defendant fails to appear, the court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
+    js show if: |
+      val("other_parties[i].is_current_military") === "None"
+  - "I still don't know": still_unsure
+    datatype: yesno
+    js show if: |
+      val("other_parties[i].is_current_military") === "None"
+  - "How do you know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
+    hide if: still_unsure
+  - "Why is it that you don't know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
+    input type: area
+    maxlength: 1395
+    show if: still_unsure
 comment: |
   % if other_parties.number() > 1: 
   other_parties.as_noun("party")   
   https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
----
-id: Military Affidavit Help
-question: |
-  Information to determine whether ${other_parties[i]} is in the military.
-subquestion: |
-  If you know the defendant’s social security number or birth date, you may determine whether they are on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Webste, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website). You must attach a copy of those search results to your Military Affidavit facts below. 
-  
-  
-  However, if you do not use the SCRA Website, provide specific facts that support your statement as to the military status of the party(ies). You may include facts that you know through your contact or communications with the party(ies). You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status of the party(ies). Please attach any written correspondence you receive from the military in support of your statement. 
-  
-  
-   If you are unable to determine whether the defendant is on active military duty and the defendant fails to appear, the court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
-  
-  Pursuant to the Service Members Civil Relief Act 50 USC §3931, you state under the pains and penalties of perjury that: 
----
-id: Military Affidavit Again
-question: | 
-  Is ${other_parties[i]} in the military?
-fields:
-  - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
-    datatype: yesnomaybe
-  - "How do you know ${other_parties[i]} military status?": other_parties[i].military_affidavit_facts
-    input type: area
-    maxlength: 1395
 ---
 id: preview small_claims
 question: |
@@ -723,7 +711,6 @@ edit:
   - address.address
   - phone_number
 confirm: True
-
 ---
 id: download small_claims
 event: small_claims_download
@@ -808,6 +795,8 @@ attachment:
       - "current_military_defendant": ${ defendants.filter(is_current_military = True) }
       - "unknown_current_military": ${ any([person.is_current_military is None for person in defendants])}
       - "is_current_military": ${ any([person.is_current_military for person in defendants])}
-      - "military_affidavit_facts": ${ other_parties[0].military_affidavit_facts + ";" + other_parties[1].military_affidavit_facts }
+    #  - "military_affidavit_facts": ${ other_parties[0].military_affidavit_facts + ";" + other_parties[1].military_affidavit_facts }
+      - "military_affidavit_facts": |
+          ${ "; ".join([person.military_affidavit_facts for person in other_parties]) }
       - "user_is_defendant": ${ al_person_answering == "defendant" }
       - "user_is_attorney": ${ al_person_answering == "attorney" }
