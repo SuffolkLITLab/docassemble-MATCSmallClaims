@@ -103,6 +103,8 @@ code: |
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
   nav.set_section("preliminary_information")
   al_person_answering
+  if al_person_answering == "attorney":
+    attorneys.there_are_any = True
   users.gather()
   users[0].address.address
   users[0].phone_number
@@ -239,7 +241,7 @@ sets:
   - users[i].name.last
   - users[i].name.middle
   - users[i].name.suffix    
-id: other users names
+id: users names
 question: |
   % if i == 0 and al_person_answering == "user":
   What is your name?
@@ -411,7 +413,11 @@ question: |
   % if hasattr(x, 'ask_number') and x.ask_number and x.target_number == 1:
   Name of ${ noun_plural(x.object_name(),1) }
   % else:
+  % if al_person_answering == "attorney":
+  What is your name?
+  % else:
   Name of your first ${ noun_plural(x.object_name(),1) }
+  % endif
   % endif
 subquestion: |
   Please [click here](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
@@ -421,7 +427,6 @@ fields:
   - "BBO number": bbo_number
     maxlength: 6
     required: True
-    
 ---
 sets:
   - other_parties[i].name.first
@@ -450,13 +455,24 @@ fields:
       other_parties[i].name_fields(person_or_business='unsure')
 
 ---
-id: persons address
+sets:
+  - attorneys[i].address.address
+  - attorneys[i].address.city
+  - attorneys[i].address.zip
+  - attorneys[i].address.unit
+  - attorneys[i].address.state
+  - attorneys[i].address.country
+id: navas persons address
 generic object: ALIndividual
 question: |
-  What is ${ x.possessive('address') }?
+  % if i == 0 and al_person_answering == "attorney":
+  What is your address?
+  % else:
+  What is the address of ${ attorneys[i].name }?
+  % endif
 fields:
   - code: |
-      x.address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
+      attorneys[i].address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
 ---
 id: persons contact information
 question: |
