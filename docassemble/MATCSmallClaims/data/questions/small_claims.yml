@@ -20,7 +20,7 @@ metadata:
     
     1. Attorney and defendant information.
     2. Your claim which clearly states why the defendant is being sued.3
-    3. The defendant(s) military status. 
+    3. The defendants' military status. 
     
     When you are finished, you will need to:
     
@@ -179,31 +179,77 @@ subquestion: |
 progress: 100
 mandatory: True
 ---
+id: basic questions intro screen
+question: |
+  File a small claim
+subquestion: |
+  % if form_approved_for_email_filing:
+  This interview can help you complete and file court forms in 3 steps:
+  % else:
+  This interview can help you complete and download forms in 3 steps:
+  % endif
+  
+  Step 1. Answer questions that will fill in your form for you.<br>
+  Step 2. Preview the completed form.<br>
+  % if form_approved_for_email_filing:
+  Step 3. Email the form to the court using this secure website and save copies
+  for yourself for later reference.  
+  % elif al_form_type in ['starts_case','existing_case','appeal']:
+  Step 3. Download and print the final form. You will need to deliver it
+  to the court on your own.
+  % else:
+  Step 3. Download and print the final form. You will need to deliver it 
+  on your own.
+  % endif
+  
+  This site is not a lawyer. If you would like a lawyer, find [your local
+  legal aid provider](https://www.lsc.gov/what-legal-aid/find-legal-aid).
+  
+  Tap the {green words} in any screen for a definition or more information.
+  
+  % if chat_partners_available().help:
+  Live help is currently available in this interview. Click the speech bubble
+  (:comment-alt:) in the navigation bar to connect to a live advocate for help.
+  % endif
+fields:
+  - note: |
+      ${ display_template(al_terms_of_use, scrollable=True) }
+      To continue, you must accept our terms of use
+  - I accept the terms of use: acknowledged_information_use
+    datatype: yesnowide
+    grid: 8
+continue button field: al_intro_screen
+terms:
+  green words: |
+    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words. 
+validation code: |
+  if not acknowledged_information_use:
+    validation_error("You must accept the terms of use to continue.", field="acknowledged_information_use")
+---
 id: Small_claims
 continue button field: small_claims_intro
 question: |
   Small claims
 subquestion: |
-  This interview will help you file for small claims.
+  This interview will help you file for small claims complaint.
   
   Before you get started, gather:
   
-  1. Attorney and defendant information.
-  2. Your claim which clearly states why the defendant is being sued.
-  3. The defendant(s) military status. 
+  1. Address of anyone you intend to sue.
+  2. Why you are suing them.
+  3. The defendants' military status. 
   
   When you are finished, you will need to:
   
-  1. Submit payment of the filing fee. 
-  2. Await further instructions regarding your case.
+  1. Pay the filing fee. 
 
   Amount you are claiming | Filing Fee 
            ------|----
-    $500 or less | (Filing fee: $40)
-    $501 - $2000 | (Filing fee: $50)
-    $2001 - $5000| (Filing fee: $100) 
-    $5001 - $7000| (Filing fee: $150)
-    More than $7000 | (Filing fee: $150)   
+    $500 or less | ($40)
+    $501 - $2000 | ($50)
+    $2001 - $5000| ($100) 
+    $5001 - $7000| ($150)
+    More than $7000 | ($150)   
   
   If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it here [Fee Waiver](https://www.mass.gov/indigency-waiver-of-court-fees).
     
@@ -213,11 +259,11 @@ subquestion: |
   
   There is a time limit on filing any claim in court. This is known as the statute of limitations. While there may be exceptions, generally:
 
-  - a claim based on a contract must be filed in court within 6 years,
-  - a claim based on a consumer protection law must be filed in court within 4 years, and
-  - a claim resulting from negligence or intentional harm must be filed in court within 3 years.
+  - A claim based on a contract must be filed in court within 6 years,
+  - A claim based on a consumer protection law must be filed in court within 4 years, and
+  - A claim resulting from negligence or intentional harm must be filed in court within 3 years.
 
-  Most people take about 15 minutes to complete this interview.
+  Most people take about 30 minutes to complete this interview.
 ---
 id: who_is_filling_out_this_form
 question: | 
@@ -291,12 +337,23 @@ fields:
   - no label: x.there_is_another
     datatype: yesnoradio
 ---
+id: any other opposing parties
+question: |
+  % if user_started_case:
+  Is there any other **defendant**?
+  % else:
+  Is there any one else **on your side**?
+  % endif
+fields:
+  - no label: other_parties.there_is_another
+    datatype: yesnoradio
+---
 id: user i's address
 question: |
   % if i > 0 and al_person_answering == "user":
   What is ${ users[i] }'s address?
   % elif i == 0 and al_person_answering == "user":
-  What is your address?
+  What is ${ users[i] }'s address?
   % else:
   What is ${ users[i] }'s address?
   % endif  
@@ -394,15 +451,24 @@ fields:
   - code: |
      location_of_claim.address_fields(default_state=AL_DEFAULT_STATE)
 ---
+template: mediation_learn_more
+subject:  |
+  Learn more about mediation
+content:  |
+  To learn more about mediation, click [here](https://www.mass.gov/alternative-dispute-resolution)
+---
 id: Additional Information
 question: |
   Are you willing to attempt to settle this claim through mediation?
 subquestion: | 
-  ${ card_start("What is mediation", color="info", icon="comment") }
+  ${ card_start("What is mediation?", color="info", icon="comment") }
   Mediation is when all parties in a lawsuit sit down with a neutral person who helps them discuss the case and tries to negotiate a settlement or resolution.
    
   The Plaintiff must notify the court if they desire mediation. The defendant may consent to mediation on the trial date. You do not lose your right to a trial if you go to mediation and it is unsuccessful. 
+  
   ${ card_end() }
+  ${ collapse_template(mediation_learn_more) } 
+  
   
 fields:
   - "Are you willing to mediate?": is_willing_mediation
@@ -465,7 +531,7 @@ question: |
   Name of your first ${ noun_plural(x.object_name(),1) }
   % endif
 subquestion: |
-  Please [click here](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
+  [Click here](https://www.massbbo.org/bbolookup.php) to look up their BBO number.
 fields:
   - code: |
       x[0].name_fields()
@@ -488,7 +554,7 @@ question: |
   Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
   % endif
 subquestion: | 
-  To find the exact legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx)
+  To find the exact legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
   
   If the Plaintiff or Defendant is not a corporation and is doing business under a trade name ("doing business as," or d/b/a): 
 
@@ -614,7 +680,7 @@ subquestion: |
 
   As the Plaintiff, you will be required to appear at all scheduled court dates, or the case may be dismissed by the court.
 
-  Once you have filed the case in court, it is your responsibility as the Plaintiff to notify the court if you and the Defendant(s) resolve the case outside of court. You may be required to file a document in writing to officially close or dispose of the case.
+  Once you have filed the case in court, it is your responsibility as the Plaintiff to notify the court if you and the Defendants' resolve the case outside of court. You may be required to file a document in writing to officially close or dispose of the case.
 
   If the Defendant(s) does not come to the hearing, the Clerk-Magistrate may still require you to prove the value of the damages that you have submitted in your claim. You should be prepared to provide evidence on damages any time you are scheduled to be in court.
   
