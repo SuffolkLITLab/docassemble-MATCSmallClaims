@@ -19,7 +19,7 @@ metadata:
     Before you get started, gather:
     
     1. Attorney and defendant information.
-    2. Your claim which clearly states why the defendant is being sued.3
+    2. Your claim which clearly states why the defendant is being sued.
     3. The defendants' military status. 
     
     When you are finished, you will need to:
@@ -105,6 +105,8 @@ code: |
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
+  if al_person_answering == "user":
+    attorneys.there_are_any = False
   users.gather()
   if users.number_gathered() > 0:
     users[0].address.address
@@ -182,7 +184,7 @@ mandatory: True
 ---
 id: basic questions intro screen
 question: |
-  File a small claim
+  File a small claim complaint
 subquestion: |
   % if form_approved_for_email_filing:
   This interview can help you complete and file court forms in 3 steps:
@@ -269,6 +271,7 @@ subquestion: |
 id: who_is_filling_out_this_form
 question: | 
   Who is filling out this form?
+  
 fields:
   - I am: al_person_answering
     datatype: radio
@@ -306,7 +309,7 @@ fields:
 ---
 id: your contact information
 question: |
-  What is ${ ordinal_number(i) } contact information?
+  What is ${ users[i] }'s contact information?
 subquestion: |
   Include at least **one** way to reach you other than by mail.
 
@@ -347,6 +350,21 @@ question: |
   % endif
 fields:
   - no label: other_parties.there_is_another
+    datatype: yesnoradio
+---
+id: any other users
+question: |
+  % if al_person_answering == "attorney":
+  Are there additional plaintiff's?
+  % else:
+  Is anyone else on **your side**?
+  % endif
+subquestion: |
+  % if len(users.elements) > 1:  
+  So far you have told us about ${comma_and_list(users.complete_elements())}.
+  % endif
+fields:
+  - no label: users.there_is_another
     datatype: yesnoradio
 ---
 id: user i's address
@@ -429,7 +447,8 @@ fields:
     min: 0
   - "Reason for suing defendant": reason_for_suing_defendant
     input type: area
-    maxlength: 1395
+    rows: 10
+    
 ---
 id: location_of_claim
 sets:
@@ -595,7 +614,9 @@ question: |
   What is ${other_parties[i]}'s contact information?
 fields:
   - Phone: other_parties[i].phone_number
+    required: True
   - Email: other_parties[i].email_address
+    required: False
 ---
 id: Military Affidavit
 question: | 
