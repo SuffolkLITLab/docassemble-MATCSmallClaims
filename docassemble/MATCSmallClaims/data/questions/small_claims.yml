@@ -128,6 +128,7 @@ code: |
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
+  other_parties[0].is_current_military
   other_parties[0].military_affidavit_facts
   location_of_claim.city
   trial_court.department
