@@ -19,8 +19,8 @@ metadata:
     Before you get started, gather:
     
     1. Attorney and defendant information.
-    2. Your claim which clearly states why the defendant is being sued.3
-    3. The defendant(s) military status. 
+    2. Your claim which clearly states why the defendant is being sued.
+    3. The defendants' military status. 
     
     When you are finished, you will need to:
     
@@ -80,7 +80,7 @@ code: |
   al_form_type = "starts_case"  
 ---
 objects:
-  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - users: ALPeopleList.using(complete_attribute= ['address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
   - location_of_claim: ALAddress
@@ -105,9 +105,12 @@ code: |
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
+  if al_person_answering == "user":
+    attorneys.there_are_any = False
   users.gather()
-  users[0].address.address
-  users[0].phone_number
+  if users.number_gathered() > 0:
+    users[0].address.address
+    users[0].phone_number
   set_progress(28)
   set_parts(subtitle=str(users))
   nav.set_section("court_selection")
@@ -125,6 +128,7 @@ code: |
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
+  other_parties[0].is_current_military
   other_parties[0].military_affidavit_facts
   location_of_claim.city
   trial_court.department
@@ -179,9 +183,96 @@ subquestion: |
 progress: 100
 mandatory: True
 ---
+id: basic questions intro screen
+question: |
+  File a small claim complaint
+subquestion: |
+  % if form_approved_for_email_filing:
+  This interview can help you complete and file court forms in 3 steps:
+  % else:
+  This interview can help you complete and download forms in 3 steps:
+  % endif
+  
+  Step 1. Answer questions that will fill in your form for you.<br>
+  Step 2. Preview the completed form.<br>
+  % if form_approved_for_email_filing:
+  Step 3. Email the form to the court using this secure website and save copies
+  for yourself for later reference.  
+  % elif al_form_type in ['starts_case','existing_case','appeal']:
+  Step 3. Download and print the final form. You will need to deliver it
+  to the court on your own.
+  % else:
+  Step 3. Download and print the final form. You will need to deliver it 
+  on your own.
+  % endif
+  
+  This site is not a lawyer. If you would like a lawyer, find [your local
+  legal aid provider](https://www.lsc.gov/what-legal-aid/find-legal-aid).
+  
+  Tap the {green words} in any screen for a definition or more information.
+  
+  % if chat_partners_available().help:
+  Live help is currently available in this interview. Click the speech bubble
+  (:comment-alt:) in the navigation bar to connect to a live advocate for help.
+  % endif
+fields:
+  - note: |
+      ${ display_template(al_terms_of_use, scrollable=True) }
+      To continue, you must accept our terms of use
+  - I accept the terms of use: acknowledged_information_use
+    datatype: yesnowide
+    grid: 8
+continue button field: al_intro_screen
+terms:
+  green words: |
+    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words. 
+validation code: |
+  if not acknowledged_information_use:
+    validation_error("You must accept the terms of use to continue.", field="acknowledged_information_use")
+---
+id: Small_claims
+continue button field: small_claims_intro
+question: |
+  Small claims
+subquestion: |
+  This interview will help you file for small claims complaint.
+  
+  Before you get started, gather:
+  
+  1. Address of anyone you intend to sue.
+  2. Why you are suing them.
+  3. The defendants' military status. 
+  
+  When you are finished, you will need to:
+  
+  1. Pay the filing fee. 
+
+  Amount you are claiming | Filing Fee 
+           ------|----
+    $500 or less | ($40)
+    $501 - $2000 | ($50)
+    $2001 - $5000| ($100) 
+    $5001 - $7000| ($150)
+    More than $7000 | ($150)   
+  
+  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it here [Fee Waiver](https://www.mass.gov/indigency-waiver-of-court-fees).
+    
+  If you are a plaintiff, you can use this interview to file a statement of small claim and notice. 
+  
+  Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
+  
+  There is a time limit on filing any claim in court. This is known as the statute of limitations. While there may be exceptions, generally:
+
+  - A claim based on a contract must be filed in court within 6 years,
+  - A claim based on a consumer protection law must be filed in court within 4 years, and
+  - A claim resulting from negligence or intentional harm must be filed in court within 3 years.
+
+  Most people take about 30 minutes to complete this interview.
+---
 id: who_is_filling_out_this_form
 question: | 
   Who is filling out this form?
+  
 fields:
   - I am: al_person_answering
     datatype: radio
@@ -194,47 +285,7 @@ code: |
   attorneys[0].name.first
   attorneys[0].address.address
   attorneys[0].phone_number
-  attorneys[0].participation = True
----
-id: Small_claims
-continue button field: small_claims_intro
-question: |
-  Small claims
-subquestion: |
-  This interview will help you file for small claims.
-  
-  Before you get started, gather:
-  
-  1. Attorney and defendant information.
-  2. Your claim which clearly states why the defendant is being sued.
-  3. The defendant(s) military status. 
-  
-  When you are finished, you will need to:
-  
-  1. Submit payment of the filing fee. 
-  2. Await further instructions regarding your case.
-
-  Amount you are claiming | Filing Fee 
-           ------|----
-    $500 or less | (Filing fee: $40)
-    $501 - $2000 | (Filing fee: $50)
-    $2001 - $5000| (Filing fee: $100) 
-    $5001 - $7000| (Filing fee: $150)
-    More than $7000 | (Filing fee: $150)   
-  
-  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it here [Fee Waiver](https://www.mass.gov/indigency-waiver-of-court-fees).
-    
-  If you are a plaintiff, you can use this interview to file a statement of small claim and notice. 
-  
-  Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
-  
-  There is a time limit on filing any claim in court. This is known as the statute of limitations. While there may be exceptions, generally:
-
-  - a claim based on a contract must be filed in court within 6 years,
-  - a claim based on a consumer protection law must be filed in court within 4 years, and
-  - a claim resulting from negligence or intentional harm must be filed in court within 3 years.
-
-  Most people take about 15 minutes to complete this interview. 
+  attorneys[0].participation = True 
 ---
 sets:
   - users[i].name.first
@@ -243,10 +294,10 @@ sets:
   - users[i].name.suffix    
 id: users names
 question: |
-  % if i == 0 and al_person_answering == "user":
+  % if al_person_answering == "user":
   What is your name?
   % else:
-  % if al_form_type in ['starts_case','existing_case','appeal']:
+  % if al_person_answering == "attorney":
   Who is the ${ ordinal(i) } person on you are representing?
   % else:
   What is the name of the ${ ordinal_number(i) } person who is adding their name to
@@ -259,17 +310,17 @@ fields:
 ---
 id: your contact information
 question: |
-  What is your contact information?
+  What is ${ users[i] }'s contact information?
 subquestion: |
   Include at least **one** way to reach you other than by mail.
 
   ${ collapse_template(why_contact_info_needed_template) }
 fields:  
-  - Mobile number: users[0].phone_number
+  - Mobile number: users[i].phone_number
     required: True
-  - Email: users[0].email_address
+  - Email: users[i].email_address
     required: False
-  - Other ways to reach you: users[0].other_contact_method
+  - Other ways to reach you: users[i].other_contact_method
     input type: area
     required: False
     help: |
@@ -282,6 +333,81 @@ validation code: |
       (not showifdef('users[0].mobile_number')) and \
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
+---
+generic object: ALPeopleList
+id: additional people 
+question: |
+  Do you have any other ${ noun_plural(x.object_name()) } to tell us about?
+fields:
+  - no label: x.there_is_another
+    datatype: yesnoradio
+---
+id: any other opposing parties
+question: |
+  % if user_started_case:
+  Is there any other **defendant**?
+  % else:
+  Is there any one else **on your side**?
+  % endif
+fields:
+  - no label: other_parties.there_is_another
+    datatype: yesnoradio
+---
+id: any other users
+question: |
+  % if al_person_answering == "attorney":
+  Are there additional plaintiff's?
+  % else:
+  Is anyone else on **your side**?
+  % endif
+subquestion: |
+  % if len(users.elements) > 1:  
+  So far you have told us about ${comma_and_list(users.complete_elements())}.
+  % endif
+fields:
+  - no label: users.there_is_another
+    datatype: yesnoradio
+---
+id: user i's address
+question: |
+  % if i > 0 and al_person_answering == "user":
+  What is ${ users[i] }'s address?
+  % elif i == 0 and al_person_answering == "user":
+  What is ${ users[i] }'s address?
+  % else:
+  What is ${ users[i] }'s address?
+  % endif  
+fields:
+  - label: |
+      % if i > 0 and al_person_answering == "user":
+      Same as your address
+      % else:
+      Same as ${ users[0] }'s address
+      % endif
+    field: users[i].address
+    datatype: object_radio
+    choices:
+      - users[0].address if defined("users[0].address.address") else None
+    object labeler: |
+      lambda y: y.on_one_line()      
+    none of the above: |
+      Somewhere else
+    disable others: True
+    show if:
+      code: |
+        i > 0 and defined("users[0].address.address")
+  - ${ users[i].address.address_label}: users[i].address.address
+    address autocomplete: True
+  - ${ users[i].address.unit_label}: users[i].address.unit
+    required: False
+  - ${ users[i].address.city_label}: users[i].address.city
+  - ${ users[i].address.state_label}: users[i].address.state
+    code: |
+      states_list(country_code=AL_DEFAULT_COUNTRY)
+    default: ${ AL_DEFAULT_STATE }
+  - ${ users[i].address.zip_label}: users[i].address.zip
+    required: False
+
 ---
 template: maximum_amount
 subject:  |
@@ -322,7 +448,8 @@ fields:
     min: 0
   - "Reason for suing defendant": reason_for_suing_defendant
     input type: area
-    maxlength: 1395
+    rows: 10
+    
 ---
 id: location_of_claim
 sets:
@@ -345,15 +472,24 @@ fields:
   - code: |
      location_of_claim.address_fields(default_state=AL_DEFAULT_STATE)
 ---
+template: mediation_learn_more
+subject:  |
+  Learn more about mediation
+content:  |
+  To learn more about mediation, click [here](https://www.mass.gov/alternative-dispute-resolution)
+---
 id: Additional Information
 question: |
   Are you willing to attempt to settle this claim through mediation?
 subquestion: | 
-  ${ card_start("What is mediation", color="info", icon="comment") }
+  ${ card_start("What is mediation?", color="info", icon="comment") }
   Mediation is when all parties in a lawsuit sit down with a neutral person who helps them discuss the case and tries to negotiate a settlement or resolution.
    
   The Plaintiff must notify the court if they desire mediation. The defendant may consent to mediation on the trial date. You do not lose your right to a trial if you go to mediation and it is unsuccessful. 
+  
   ${ card_end() }
+  ${ collapse_template(mediation_learn_more) } 
+  
   
 fields:
   - "Are you willing to mediate?": is_willing_mediation
@@ -420,7 +556,7 @@ question: |
   % endif
   % endif
 subquestion: |
-  Please [click here](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
+  [Click here](https://www.massbbo.org/bbolookup.php) to look up their BBO number.
 fields:
   - code: |
       x[0].name_fields()
@@ -442,7 +578,7 @@ question: |
   Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
   % endif
 subquestion: | 
-  To find the exact legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx)
+  To find the exact legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
   
   If the Plaintiff or Defendant is not a corporation and is doing business under a trade name ("doing business as," or d/b/a): 
 
@@ -468,7 +604,7 @@ question: |
   % if i == 0 and al_person_answering == "attorney":
   What is your address?
   % else:
-  What is the address of ${ attorneys[i].name }
+  What is the address of ${ attorneys[i].name }?
   % endif
 fields:
   - code: |
@@ -479,7 +615,9 @@ question: |
   What is ${other_parties[i]}'s contact information?
 fields:
   - Phone: other_parties[i].phone_number
+    required: True
   - Email: other_parties[i].email_address
+    required: False
 ---
 id: Military Affidavit
 question: | 
@@ -508,6 +646,51 @@ comment: |
   other_parties.as_noun("party")   
   https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
 ---
+id: Military Affidavit Help
+question: |
+  Information to determine whether ${other_parties[i]} is in the military.
+subquestion: |
+  If you know the defendant’s social security number or birth date, you may determine whether they are on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Webste, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website). You must attach a copy of those search results to your Military Affidavit facts below. 
+  
+  
+  However, if you do not use the SCRA Website, provide specific facts that support your statement as to the military status of the party(ies). You may include facts that you know through your contact or communications with the party(ies). You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status of the party(ies). Please attach any written correspondence you receive from the military in support of your statement. 
+  
+  
+   If you are unable to determine whether the defendant is on active military duty and the defendant fails to appear, the court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
+  
+  Pursuant to the Service Members Civil Relief Act 50 USC §3931, you state under the pains and penalties of perjury that: 
+---
+id: Military Affidavit Again
+question: | 
+  Is ${other_parties[i]} in the military?
+fields:
+  - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
+    datatype: yesnomaybe
+  - "How do you know ${other_parties[i]} military status?": other_parties[i].military_affidavit_facts
+    input type: area
+    maxlength: 1395
+---
+id: affirmation and oath of no perjury
+question: |
+  Signing Under Oath
+subquestion: |
+  Your form must be signed under oath.
+  That means everything you say must be true as far as you know.
+  You may be punished by a judge if you intentionally
+  say something that is not true.
+fields:
+  - no label: users[i].states_above_true
+    datatype: checkboxes
+    minlength: 1
+    choices:
+      - I affirm that the answers I have given are true, under the pains and penalties of perjury: states_true
+    validation messages:
+      minlength: |
+        You cannot keep going unless you did your best to tell the truth.
+---
+code: |
+  signature_fields = ['users[0].signature'] 
+---
 id: preview small_claims
 question: |
   Preview your form before you sign it
@@ -523,9 +706,7 @@ subquestion: |
   
   Remember to come back to this window to continue and sign your form.
 continue button field: small_claims_preview_question    
----
-code: |
-  signature_fields = ['users[0].signature']
+
 ---
 code: |
   # This is a placeholder for the addresses that will be searched
@@ -549,7 +730,7 @@ subquestion: |
 
   As the Plaintiff, you will be required to appear at all scheduled court dates, or the case may be dismissed by the court.
 
-  Once you have filed the case in court, it is your responsibility as the Plaintiff to notify the court if you and the Defendant(s) resolve the case outside of court. You may be required to file a document in writing to officially close or dispose of the case.
+  Once you have filed the case in court, it is your responsibility as the Plaintiff to notify the court if you and the Defendants' resolve the case outside of court. You may be required to file a document in writing to officially close or dispose of the case.
 
   If the Defendant(s) does not come to the hearing, the Clerk-Magistrate may still require you to prove the value of the damages that you have submitted in your claim. You should be prepared to provide evidence on damages any time you are scheduled to be in court.
   
@@ -646,7 +827,7 @@ review:
   - Edit: user_signature
     button: |
       **Signature**:
-      ${ user }
+      ${ users[0].signature }
   - Edit: signature_date
     button: |
       **Date of signature**:
