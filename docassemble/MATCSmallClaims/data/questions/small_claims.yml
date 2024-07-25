@@ -83,7 +83,6 @@ objects:
   - users: ALPeopleList.using(complete_attribute= ['address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
-  - location_of_claim: ALAddress
 ---
 sections:
   - preliminary_information: Your information
@@ -130,7 +129,6 @@ code: |
   other_parties[0].phone_number
   other_parties[0].is_current_military
   other_parties[0].military_affidavit_facts
-  location_of_claim.city
   trial_court.department
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
@@ -310,6 +308,21 @@ fields:
   - code: |
       users[i].name_fields(person_or_business="unsure")
 ---
+template: why_contact_info_needed_template
+subject: |
+  Why do I need to give my contact information?
+content: | 
+  % if al_form_type in ['starts_case','existing_case','appeal']:
+  The court **must** be able to reach you. So you have to give them some way to do this.
+  
+  Some forms allow you to tell the court you need to keep your address, phone,
+  and email confidential, so that only court staff can see this information. 
+  % else:
+  It is important that the person or organization you deliver this form to
+  is able to contact you. Make sure to include at least one way to reach you
+  other than mail.
+  % endif
+---
 id: your contact information
 question: |
   What is ${ users[i] }'s contact information?
@@ -318,9 +331,10 @@ subquestion: |
 
   ${ collapse_template(why_contact_info_needed_template) }
 fields:  
-  - Mobile number: users[i].phone_number
+  - Phone number: users[i].phone_number
     required: True
-  - Email: users[i].email_address
+  - Email address: users[i].email    
+    datatype: email
     required: False
   - Other ways to reach you: users[i].other_contact_method
     input type: area
@@ -333,6 +347,7 @@ fields:
 validation code: |
   if (not showifdef('users[0].phone_number') and \
       (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
 ---
@@ -452,27 +467,6 @@ fields:
     input type: area
     rows: 10
     
----
-id: location_of_claim
-sets:
-  - location_of_claim.address
-  - location_of_claim.city
-question: |
-  What is the location of the claim?
-fields:
-  - Address: location_of_claim
-    datatype: object_radio
-    choices:
-      - users[0].address
-      - other_parties[0].address
-    object labeler: |
-      lambda y: y.on_one_line()
-    none of the above: |
-      Somewhere else
-    default: users[0].address
-    disable others: True
-  - code: |
-     location_of_claim.address_fields(default_state=AL_DEFAULT_STATE)
 ---
 template: mediation_learn_more
 subject:  |
@@ -725,7 +719,7 @@ code: |
   # for matching address to court. Edit if court venue is based on 
   # a different address than the user's
   [user.address.address for user in users.complete_elements()]
-  addresses_to_search = [user.address for user in users.complete_elements()]+[defendant.address for defendant in other_parties.complete_elements()]+[location_of_claim]
+  addresses_to_search = [user.address for user in users.complete_elements()]+[defendant.address for defendant in other_parties.complete_elements()]
 ---
 id: small claims review screen
 event: review_small_claims
@@ -804,10 +798,6 @@ review:
     button: |
       **Reason for suing defendant**:
       > ${ single_paragraph(reason_for_suing_defendant) }
-  - Edit: location_of_claim
-    button: |
-      **Location of claim**:
-      ${ location_of_claim }
   - Edit: is_willing_mediation
     button: |
       **Is willing mediation**:
@@ -981,7 +971,7 @@ attachment:
       - "user_address_line_one": ${ users[0].address.line_one() }
       - "user_address_line_two": ${ users[0].address.line_two() }
       - "attorney_address_line_two": ${ attorneys[0].address.line_two() }
-      - "user_phone_number": ${ users[0].phone_number }
+      - "user_phone_number": ${ users[i].phone_number }
       - "user_name_business": ${ users[0].name_business }
       - "attorney_phone_number": ${ attorneys[0].phone_number }
       - "bbo_number": ${ bbo_number }
