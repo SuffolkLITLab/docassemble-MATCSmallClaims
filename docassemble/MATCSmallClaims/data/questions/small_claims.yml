@@ -233,7 +233,7 @@ validation code: |
 id: Small_claims
 continue button field: small_claims_intro
 question: |
-  Small claims
+  Small claims complaint
 subquestion: |
   This interview will help you file for small claims complaint.
   
@@ -285,20 +285,22 @@ code: |
   attorneys[0].name.first
   attorneys[0].address.address
   attorneys[0].phone_number
+  attorneys[0].email_address
   attorneys[0].participation = True 
 ---
 sets:
   - users[i].name.first
   - users[i].name.last
   - users[i].name.middle
-  - users[i].name.suffix    
+  - users[i].name.suffix  
+  - users[i].name.business
 id: users names
 question: |
   % if al_person_answering == "user":
   What is your name?
   % else:
   % if al_person_answering == "attorney":
-  Who is the ${ ordinal(i) } person on you are representing?
+  Name of the first plaintiff
   % else:
   What is the name of the ${ ordinal_number(i) } person who is adding their name to
   this form with you?
@@ -306,7 +308,7 @@ question: |
   % endif
 fields:
   - code: |
-      users[i].name_fields()
+      users[i].name_fields(person_or_business="unsure")
 ---
 id: your contact information
 question: |
@@ -580,7 +582,7 @@ question: |
 subquestion: | 
   To find the exact legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
   
-  If the Plaintiff or Defendant is not a corporation and is doing business under a trade name ("doing business as," or d/b/a): 
+  If the defendant is not a corporation and is doing business under a trade name ("doing business as," or d/b/a): 
 
   Verify the name by calling the city or town hall where the business is located.
 
@@ -609,6 +611,16 @@ question: |
 fields:
   - code: |
       attorneys[i].address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
+---
+id: persons contact information
+generic object: ALIndividual
+question: |
+  What is ${x}'s contact information?
+fields:
+  - Phone: x.phone_number
+    required: True
+  - Email: x.email_address
+    required: False
 ---
 id: persons contact information
 question: |
@@ -970,6 +982,7 @@ attachment:
       - "user_address_line_two": ${ users[0].address.line_two() }
       - "attorney_address_line_two": ${ attorneys[0].address.line_two() }
       - "user_phone_number": ${ users[0].phone_number }
+      - "user_name_business": ${ users[0].name_business }
       - "attorney_phone_number": ${ attorneys[0].phone_number }
       - "bbo_number": ${ bbo_number }
       - "defendant1_name": ${ defendants[0] }
