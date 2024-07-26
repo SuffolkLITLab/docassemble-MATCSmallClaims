@@ -323,9 +323,37 @@ content: |
   other than mail.
   % endif
 ---
-id: your contact information
+id: first plaintiff contact
 question: |
   What is ${ users[0] }'s contact information?
+subquestion: |
+  Include at least **one** way to reach you other than by mail.
+
+  ${ collapse_template(why_contact_info_needed_template) }
+fields:  
+  - Phone number: users[0].phone_number
+    required: True
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Other ways to reach you: users[0].other_contact_method
+    input type: area
+    required: False
+    help: |
+      If you do not have a phone number or email, provide
+      specific contact instructions. For example, use a friend's phone number.
+      But the friend must be someone you can rely on to give you a
+      message.
+validation code: |
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
+---
+id: your contact information
+question: |
+  What is ${ users[i] }'s contact information?
 subquestion: |
   Include at least **one** way to reach you other than by mail.
 
@@ -345,11 +373,11 @@ fields:
       But the friend must be someone you can rely on to give you a
       message.
 validation code: |
-  if (not showifdef('users[0].phone_number') and \
-      (not showifdef('users[0].mobile_number')) and \
-      (not showifdef('users[0].email')) and \
-      (not showifdef('users[0].other_contact_method'))):
-    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
+  if (not showifdef('users[i].phone_number') and \
+      (not showifdef('users[i].mobile_number')) and \
+      (not showifdef('users[i].email')) and \
+      (not showifdef('users[i].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."), field="users[i].other_contact_method")
 ---
 generic object: ALPeopleList
 id: additional people 
