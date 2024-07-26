@@ -254,8 +254,6 @@ subquestion: |
     More than $7000 | ($150)   
   
   If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it here [Fee Waiver](https://www.mass.gov/indigency-waiver-of-court-fees).
-    
-  If you are a plaintiff, you can use this interview to file a statement of small claim and notice. 
   
   Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
   
@@ -304,6 +302,8 @@ question: |
   this form with you?
   % endif
   % endif
+subquestion:  |
+  Include your full name after your business if you are filing as a business. 
 fields:
   - code: |
       users[i].name_fields(person_or_business="unsure")
@@ -325,7 +325,7 @@ content: |
 ---
 id: your contact information
 question: |
-  What is ${ users[i] }'s contact information?
+  What is ${ users[0] }'s contact information?
 subquestion: |
   Include at least **one** way to reach you other than by mail.
 
@@ -388,7 +388,7 @@ fields:
 id: user i's address
 question: |
   % if i > 0 and al_person_answering == "user":
-  What is ${ users[i] }'s address?
+  What is your address?
   % elif i == 0 and al_person_answering == "user":
   What is ${ users[i] }'s address?
   % else:
@@ -609,7 +609,7 @@ fields:
 id: persons contact information
 generic object: ALIndividual
 question: |
-  What is ${x}'s contact information?
+  What is your contact information?
 fields:
   - Phone: x.phone_number
     required: True
