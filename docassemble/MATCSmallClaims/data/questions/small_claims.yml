@@ -1,5 +1,5 @@
 include:
-  - docassemble.AssemblyLine:assembly_line.yml 
+  - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.MassAccess:massaccess.yml
   - docassemble.demo:data/questions/examples/cards.yml
   - docassemble.ALToolbox:collapse_template.yml
@@ -253,7 +253,7 @@ subquestion: |
     $5001 - $7000| ($150)
     More than $7000 | ($150)   
   
-  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it here [Fee Waiver](https://www.mass.gov/indigency-waiver-of-court-fees).
+  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it [here](https://www.mass.gov/indigency-waiver-of-court-fees).
   
   Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
   
@@ -383,6 +383,8 @@ generic object: ALPeopleList
 id: additional people 
 question: |
   Do you have any other ${ noun_plural(x.object_name()) } to tell us about?
+subquestion: |
+  It is uncommon to have more than one attorney, but you can do so with this form. 
 fields:
   - no label: x.there_is_another
     datatype: yesnoradio
@@ -606,9 +608,9 @@ subquestion: |
   
   If the defendant is not a corporation and is doing business under a trade name ("doing business as," or d/b/a): 
 
-  Verify the name by calling the city or town hall where the business is located.
+  - Verify the name by calling the city or town hall where the business is located.
 
-  Any entity that does business under a trade name is required to register in the local city or town clerk's office where the business is located.
+  - Any entity that does business under a trade name is required to register in the local city or town clerk's office where the business is located.
   
 fields:
   - code: |
@@ -660,7 +662,13 @@ fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
   - note: |
-      If you know the defendant’s social security number or birth date, you may determine whether they are on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Webste, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website). You must attach a copy of those search results to your Military Affidavit facts below. However, if you do not use the SCRA Website, provide specific facts that support your statement as to the military status of the party(ies). You may include facts that you know through your contact or communications with the party(ies). You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status of the party(ies). Please attach any written correspondence you receive from the military in support of your statement. If you are unable to determine whether the defendant is on active military duty and the defendant fails to appear, the court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
+      If you know the defendant’s social security number or birth date, you may determine whether they are on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website). You must attach a copy of those search results to your Military Affidavit facts below. 
+      
+      
+      However, if you do not use the SCRA Website, provide specific facts that support your statement as to the military status of the party(ies). You may include facts that you know through your contact or communications with the party(ies). You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status of the party(ies). Please attach any written correspondence you receive from the military in support of your statement. 
+      
+      
+      If you are unable to determine whether the defendant is on active military duty and the defendant fails to appear, the court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
     js show if: |
       val("other_parties[i].is_current_military") === "None"
   - "I still don't know": still_unsure
@@ -957,7 +965,7 @@ attachment:
       - "user_address_line_one": ${ users[0].address.line_one() }
       - "user_address_line_two": ${ users[0].address.line_two() }
       - "attorney_address_line_two": ${ attorneys[0].address.line_two() }
-      - "user_phone_number": ${ users[i].phone_number }
+      - "user_phone_number": ${ users[0].phone_number }
       - "user_name_business": ${ users[0].name_business }
       - "attorney_phone_number": ${ attorneys[0].phone_number }
       - "bbo_number": ${ bbo_number }
