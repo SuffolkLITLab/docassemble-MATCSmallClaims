@@ -95,7 +95,7 @@ objects:
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
 ---
 sections:
-  - preliminary_information: Your information
+  - plaintiff_question: Plaintiff information
   - court_selection: Court selection
   - attorney_question: Attorney information
   - defendant_question: Defendant information
@@ -110,7 +110,7 @@ id: interview_order_small_claims
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
-  nav.set_section("preliminary_information")
+  nav.set_section("plaintiff_question")
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
