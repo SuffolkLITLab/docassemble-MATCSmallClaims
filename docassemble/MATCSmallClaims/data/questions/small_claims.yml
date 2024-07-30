@@ -25,7 +25,6 @@ metadata:
     When you are finished, you will need to:
     
     1. Submit payment of the filing fee (See below).
-    2. Await further instructions regarding your case.
     
     Amount you are claiming:	    Your filing fee:
     $500 or less	                $40
@@ -33,6 +32,17 @@ metadata:
     $2,001-$5,000	                $100
     $5,001-$7,000                	$150
     More than $7,000 	            $150
+    
+      If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it [here](https://www.mass.gov/indigency-waiver-of-court-fees).
+      
+      Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
+      
+      There is a time limit on filing any claim in court. This is known as the statute of limitations. While there may be exceptions, generally:
+      - A claim based on a contract must be filed in court within 6 years,
+      - A claim based on a consumer protection law must be filed in court within 4 years, and
+      - A claim resulting from negligence or intentional harm must be filed in court within 3 years.
+      
+      Most people take about 30 minutes to complete this interview.
     
   maturity: production
   estimated_completion_minutes: 60
@@ -247,11 +257,11 @@ subquestion: |
 
   Amount you are claiming | Filing Fee 
            ------|----
-    $500 or less | ($40)
-    $501 - $2000 | ($50)
-    $2001 - $5000| ($100) 
-    $5001 - $7000| ($150)
-    More than $7000 | ($150)   
+    $500 or less | $40
+    $501 - $2000 | $50
+    $2001 - $5000| $100 
+    $5001 - $7000| $150
+    More than $7000 | $150   
   
   If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it [here](https://www.mass.gov/indigency-waiver-of-court-fees).
   
@@ -285,6 +295,30 @@ code: |
   attorneys[0].participation = True 
 ---
 sets:
+  - users[0].name.first
+  - users[0].name.last
+  - users[0].name.middle
+  - users[0].name.suffix  
+  - users[0].name.business
+id: users names
+question: |
+  % if al_person_answering == "user":
+  What is your name?
+  % else:
+  % if al_person_answering == "attorney":
+  Name of the first plaintiff
+  % else:
+  What is the name of the ${ ordinal_number(0) } person who is adding their name to
+  this form with you?
+  % endif
+  % endif
+subquestion:  |
+  Include your full name after your business if you are filing as a business. 
+fields:
+  - code: |
+      users[0].name_fields(person_or_business="unsure")     
+---
+sets:
   - users[i].name.first
   - users[i].name.last
   - users[i].name.middle
@@ -293,10 +327,10 @@ sets:
 id: users names
 question: |
   % if al_person_answering == "user":
-  What is your name?
+  What is their name?
   % else:
   % if al_person_answering == "attorney":
-  Name of the first plaintiff
+  What is ${ ordinal(i) } plaintiffs name?
   % else:
   What is the name of the ${ ordinal_number(i) } person who is adding their name to
   this form with you?
@@ -306,7 +340,47 @@ subquestion:  |
   Include your full name after your business if you are filing as a business. 
 fields:
   - code: |
-      users[i].name_fields(person_or_business="unsure")
+      users[i].name_fields(person_or_business="unsure")      
+---
+id: user i's address
+question: |
+  % if i == 1 and al_person_answering == "user":
+  What is ${ ordinal_number(i) } address?
+  % elif i == 0 and al_person_answering == "user":
+  What is ${ users[i] }'s address?
+  % else:
+  What is ${ users[i] }'s address?
+  % endif  
+fields:
+  - label: |
+      % if i > 0 and al_person_answering == "user":
+      Same as your address
+      % else:
+      Same as ${ users[0] }'s address
+      % endif
+    field: users[i].address
+    datatype: object_radio
+    choices:
+      - users[0].address if defined("users[0].address.address") else None
+    object labeler: |
+      lambda y: y.on_one_line()      
+    none of the above: |
+      Somewhere else
+    disable others: True
+    show if:
+      code: |
+        i > 0 and defined("users[0].address.address")
+  - ${ users[i].address.address_label}: users[i].address.address
+    address autocomplete: True
+  - ${ users[i].address.unit_label}: users[i].address.unit
+    required: False
+  - ${ users[i].address.city_label}: users[i].address.city
+  - ${ users[i].address.state_label}: users[i].address.state
+    code: |
+      states_list(country_code=AL_DEFAULT_COUNTRY)
+    default: ${ AL_DEFAULT_STATE }
+  - ${ users[i].address.zip_label}: users[i].address.zip
+    required: False
 ---
 template: why_contact_info_needed_template
 subject: |
@@ -502,7 +576,7 @@ template: mediation_learn_more
 subject:  |
   Learn more about mediation
 content:  |
-  To learn more about mediation, click [here](https://www.mass.gov/alternative-dispute-resolution)
+  To learn more about mediation, click [here](https://www.mass.gov/info-details/about-mediation)
 ---
 id: Additional Information
 question: |
