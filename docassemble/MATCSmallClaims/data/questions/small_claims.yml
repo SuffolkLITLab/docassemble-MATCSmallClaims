@@ -1,7 +1,7 @@
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.MassAccess:massaccess.yml
-  - docassemble.AffidavitofIndigencyMAVC:affidavit_body.yml
+  - docassemble.ALAffidavitOfIndigency:affidavit_body.yml
   - docassemble.demo:data/questions/examples/cards.yml
   - docassemble.ALToolbox:collapse_template.yml
 ---
@@ -94,7 +94,6 @@ objects:
   - users: ALPeopleList.using(complete_attribute= ['address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
-  - affidavit_of_indigency: ALDocument.using(filename=&quot;affidavit-of-indigency.pdf&quot;, title=&quot;Affidavit of Indigency&quot; enabled=True)
 ---
 sections:
   - preliminary_information: Your information
@@ -114,9 +113,6 @@ code: |
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
   nav.set_section("preliminary_information")
   small_claims_intro
-  requesting_waiver
-  if requesting_waiver == "yes": 
-    ask_affidavit_questions
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
@@ -155,9 +151,10 @@ code: |
   trial_court
   set_progress(56)
   nav.set_section("review_small_claims")
-  small_claims_preview_question 
+  if wants_fee_waiver: 
+    is_indigent
+    set_fee_waiver_defaults
   users[0].states_above_true
-  users[0].signature
   interview_order_small_claims = True
 ---
 ###################### Main order ######################
@@ -167,10 +164,11 @@ comment: |
 mandatory: True
 code: |
   al_intro_screen
-  ask_affidavit_questions
   small_claims_intro
   interview_order_small_claims
   signature_date
+  users[0].signature
+  small_claims_preview_question 
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
@@ -292,11 +290,6 @@ fields:
     choices: 
       - a self-represented plaintiff: user 
       - an attorney filing on behalf of a plaintiff: attorney
----
-id: affidavit of indigency
-question:   |
-  Are you requesting a waiver of the filing fee?
-yesno: requesting_waiver 
 
 ---
 id: attorney
@@ -775,21 +768,36 @@ comment: |
   other_parties.as_noun("party")   
   https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
 ---
-id: explain affidavit of indigency
-continue button field: ask_affidavit_questions
+id: wants_fee_waiver
 question: |
-  Fee waiver questions
+  You may qualify for a fee waiver
 subquestion: |
+  There is a filing fee ranging from $50 to $150. 
   
-  The next questions will be used to find out if you
-  qualify for a fee waiver. 
+  But you may need to pay:
   
-  If you do not qualify for a fee waiver, you can still finish this form.
-  You will need to download and print it, or use eFile MA to deliver it
-  to the court electronically.
+ 
+    or to publish notice if you cannot find them to serve them in person.
+
+  The judge may also want to know your income to decide if you can afford to
+  guarantee the **surety bond**.
+
+  If you earn under a certain amount, you can ask the court to help pay the filing fee.
+fields:
+  - Do you want to find out if you qualify for a fee waiver?: wants_fee_waiver
+    datatype: yesnoradio
 --- 
 code: |
-  affidavit_of_indigency.enabled = ask_indigency_questions and is_indigent
+  affidavit_of_indigency.enabled = wants_fee_waiver and is_indigent
+---
+code: |
+  fees['Filing fee'].waive = True
+  fees['Filing fee'].amount= defendant_court_costs_amount 
+  set_fee_waiver_defaults = True
+---
+code: |
+  affidavitofindigency_attachment.enabled = wants_fee_waiver and is_indigent
+
 ---
 code: |
   signature_fields = ['users[0].signature'] 
@@ -1039,8 +1047,8 @@ objects:
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment],  filename="small_claims", title="All forms to deliver to court", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, affidavitofindigency_attachment],   filename="small_claims", title="All forms to deliver to court", enabled=True)
 ---
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
