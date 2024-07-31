@@ -1,6 +1,7 @@
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.MassAccess:massaccess.yml
+  - docassemble.AffidavitofIndigencyMAVC:affidavit_body.yml
   - docassemble.demo:data/questions/examples/cards.yml
   - docassemble.ALToolbox:collapse_template.yml
 ---
@@ -93,6 +94,7 @@ objects:
   - users: ALPeopleList.using(complete_attribute= ['address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
+  - affidavit_of_indigency: ALDocument.using(filename=&quot;affidavit-of-indigency.pdf&quot;, title=&quot;Affidavit of Indigency&quot; enabled=True)
 ---
 sections:
   - preliminary_information: Your information
@@ -111,6 +113,10 @@ code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
   nav.set_section("preliminary_information")
+  small_claims_intro
+  requesting_waiver
+  if requesting_waiver == "yes": 
+    ask_affidavit_questions
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
@@ -161,6 +167,7 @@ comment: |
 mandatory: True
 code: |
   al_intro_screen
+  ask_affidavit_questions
   small_claims_intro
   interview_order_small_claims
   signature_date
@@ -258,10 +265,10 @@ subquestion: |
   Amount you are claiming | Filing Fee 
            ------|----
     $500 or less | $40
-    $501 - $2000 | $50
-    $2001 - $5000| $100 
-    $5001 - $7000| $150
-    More than $7000 | $150   
+    $501 - $2,000 | $50
+    $2,001 - $5,000| $100 
+    $5,001 - $7,000| $150
+    More than $7,000 | $150   
   
   If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it [here](https://www.mass.gov/indigency-waiver-of-court-fees).
   
@@ -285,6 +292,12 @@ fields:
     choices: 
       - a self-represented plaintiff: user 
       - an attorney filing on behalf of a plaintiff: attorney
+---
+id: affidavit of indigency
+question:   |
+  Are you requesting a waiver of the filing fee?
+yesno: requesting_waiver 
+
 ---
 id: attorney
 code: |
@@ -762,6 +775,22 @@ comment: |
   other_parties.as_noun("party")   
   https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
 ---
+id: explain affidavit of indigency
+continue button field: ask_affidavit_questions
+question: |
+  Fee waiver questions
+subquestion: |
+  
+  The next questions will be used to find out if you
+  qualify for a fee waiver. 
+  
+  If you do not qualify for a fee waiver, you can still finish this form.
+  You will need to download and print it, or use eFile MA to deliver it
+  to the court electronically.
+--- 
+code: |
+  affidavit_of_indigency.enabled = ask_indigency_questions and is_indigent
+---
 code: |
   signature_fields = ['users[0].signature'] 
 ---
@@ -894,6 +923,10 @@ review:
     button: |
       **Required facts in support of military affidavit**:
       > ${ single_paragraph(other_parties[i].military_affidavit_facts) }
+  - Edit: ask_affidavit_questions
+    button: |
+      **Affidavit of Indigency**:
+      ${ ask_affidavit_questions }
   - Edit: user_signature
     button: |
       **Signature**:
@@ -1002,6 +1035,7 @@ progress: 100
 objects:
   - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
   - small_claims_attachment: ALDocument.using(title="Small claims", filename="small_claims", enabled=True, has_addendum=False, )
+  - affidavit_of_indigency: ALDocument.using(filename=&quot;affidavit-of-indigency.pdf&quot;, title=&quot;Affidavit of Indigency&quot; enabled=True)
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
