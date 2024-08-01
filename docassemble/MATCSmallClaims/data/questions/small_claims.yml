@@ -102,6 +102,7 @@ sections:
   - defendant_question: Defendant information
   - plaintiff_s_claim: Your claim
   - mediation: Mediation
+  - wants_fee_waiver: Fee Waiver
   - review_small_claims: Review your answers
 ---
 #################### Interview order #####################
@@ -150,10 +151,11 @@ code: |
   is_willing_mediation
   trial_court
   set_progress(56)
-  nav.set_section("review_small_claims")
+  nav.set_section("wants_fee_waiver")
   if wants_fee_waiver: 
     is_indigent
     set_fee_waiver_defaults
+  nav.set_section("review_small_claims")
   users[0].states_above_true
   interview_order_small_claims = True
 ---
@@ -662,7 +664,7 @@ question: |
   % endif
   % endif
 subquestion: |
-  [Click here](https://www.massbbo.org/bbolookup.php) to look up their BBO number.
+  [Click here](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
 fields:
   - code: |
       x[0].name_fields()
