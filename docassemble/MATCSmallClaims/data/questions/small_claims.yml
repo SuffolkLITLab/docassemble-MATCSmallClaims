@@ -1,6 +1,7 @@
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.MassAccess:massaccess.yml
+  - docassemble.ALAffidavitOfIndigency:affidavit_body.yml
   - docassemble.demo:data/questions/examples/cards.yml
   - docassemble.ALToolbox:collapse_template.yml
 ---
@@ -101,6 +102,7 @@ sections:
   - defendant_question: Defendant information
   - plaintiff_s_claim: Your claim
   - mediation: Mediation
+  - wants_fee_waiver: Fee Waiver
   - review_small_claims: Review your answers
 ---
 #################### Interview order #####################
@@ -110,7 +112,8 @@ id: interview_order_small_claims
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
-  nav.set_section("plaintiff_question")
+  nav.set_section("preliminary_information")
+  small_claims_intro
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
@@ -148,10 +151,12 @@ code: |
   is_willing_mediation
   trial_court
   set_progress(56)
+  nav.set_section("wants_fee_waiver")
+  if wants_fee_waiver: 
+    is_indigent
+    set_fee_waiver_defaults
   nav.set_section("review_small_claims")
-  small_claims_preview_question 
   users[0].states_above_true
-  users[0].signature
   interview_order_small_claims = True
 ---
 ###################### Main order ######################
@@ -164,6 +169,8 @@ code: |
   small_claims_intro
   interview_order_small_claims
   signature_date
+  users[0].signature
+  small_claims_preview_question 
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
@@ -193,7 +200,7 @@ mandatory: True
 ---
 id: basic questions intro screen
 question: |
-  File a small claim complaint
+  File a small claims complaint
 subquestion: |
   % if form_approved_for_email_filing:
   This interview can help you complete and file court forms in 3 steps:
@@ -241,15 +248,15 @@ validation code: |
 id: Small_claims
 continue button field: small_claims_intro
 question: |
-  Small claims complaint
+  Information for the small claims complaint process
 subquestion: |
-  This interview will help you file for small claims complaint.
+  This interview will help you file a small claims complaint.
   
   Before you get started, gather:
   
   1. Address of anyone you intend to sue.
   2. Why you are suing them.
-  3. The defendants' military status. 
+  3. Military statuses of anyone you intend to sue. 
   
   When you are finished, you will need to:
   
@@ -258,10 +265,10 @@ subquestion: |
   Amount you are claiming | Filing Fee 
            ------|----
     $500 or less | $40
-    $501 - $2000 | $50
-    $2001 - $5000| $100 
-    $5001 - $7000| $150
-    More than $7000 | $150   
+    $501 - $2,000 | $50
+    $2,001 - $5,000| $100 
+    $5,001 - $7,000| $150
+    More than $7,000 | $150   
   
   If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it [here](https://www.mass.gov/indigency-waiver-of-court-fees).
   
@@ -285,6 +292,7 @@ fields:
     choices: 
       - a self-represented plaintiff: user 
       - an attorney filing on behalf of a plaintiff: attorney
+
 ---
 id: attorney
 code: |
@@ -477,9 +485,9 @@ fields:
 id: any other users
 question: |
   % if al_person_answering == "attorney":
-  Are there additional plaintiff's?
+  Are there additional plaintiffs?
   % else:
-  Is anyone else on **your side**?
+  Are you representing an additional party?
   % endif
 subquestion: |
   % if len(users.elements) > 1:  
@@ -656,7 +664,7 @@ question: |
   % endif
   % endif
 subquestion: |
-  [Click here](https://www.massbbo.org/bbolookup.php) to look up their BBO number.
+  [Click here](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
 fields:
   - code: |
       x[0].name_fields()
@@ -736,13 +744,13 @@ fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
   - note: |
-      If you know the defendant’s social security number or birth date, you may determine whether they are on active military duty online at the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website). You must attach a copy of those search results to your Military Affidavit facts below. 
+      1. If you know the defendant’s Social Security number or birth date, you can check online if they are on active military duty using the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website).
       
       
-      However, if you do not use the SCRA Website, provide specific facts that support your statement as to the military status of the party(ies). You may include facts that you know through your contact or communications with the party(ies). You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status of the party(ies). Please attach any written correspondence you receive from the military in support of your statement. 
+      2. If you don't use the SCRA Website, provide details supporting your claim about the defendant's military status. You can include facts from your contacts or communications with the defendant. You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status.
       
       
-      If you are unable to determine whether the defendant is on active military duty and the defendant fails to appear, the court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
+      In either case, attach a copy of your search results or correspondences.
     js show if: |
       val("other_parties[i].is_current_military") === "None"
   - "I still don't know": still_unsure
@@ -757,10 +765,46 @@ fields:
     input type: area
     maxlength: 1395
     show if: still_unsure
+  - note: |
+      The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
+    show if: still_unsure
 comment: |
   % if other_parties.number() > 1: 
   other_parties.as_noun("party")   
   https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
+  
+  #The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
+---
+id: wants_fee_waiver
+question: |
+  You may qualify for a fee waiver
+subquestion: |
+  There is a filing fee ranging from $50 to $150. 
+  
+  But you may need to pay:
+  
+ 
+    or to publish notice if you cannot find them to serve them in person.
+
+  The judge may also want to know your income to decide if you can afford to
+  guarantee the **surety bond**.
+
+  If you earn under a certain amount, you can ask the court to help pay the filing fee.
+fields:
+  - Do you want to find out if you qualify for a fee waiver?: wants_fee_waiver
+    datatype: yesnoradio
+--- 
+code: |
+  affidavit_of_indigency.enabled = wants_fee_waiver and is_indigent
+---
+code: |
+  fees['Filing fee'].waive = True
+  fees['Filing fee'].amount= defendant_court_costs_amount 
+  set_fee_waiver_defaults = True
+---
+code: |
+  affidavitofindigency_attachment.enabled = wants_fee_waiver and is_indigent
+
 ---
 code: |
   signature_fields = ['users[0].signature'] 
@@ -894,6 +938,10 @@ review:
     button: |
       **Required facts in support of military affidavit**:
       > ${ single_paragraph(other_parties[i].military_affidavit_facts) }
+  - Edit: ask_affidavit_questions
+    button: |
+      **Affidavit of Indigency**:
+      ${ ask_affidavit_questions }
   - Edit: user_signature
     button: |
       **Signature**:
@@ -1002,11 +1050,12 @@ progress: 100
 objects:
   - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
   - small_claims_attachment: ALDocument.using(title="Small claims", filename="small_claims", enabled=True, has_addendum=False, )
+  - affidavit_of_indigency: ALDocument.using(filename=&quot;affidavit-of-indigency.pdf&quot;, title=&quot;Affidavit of Indigency&quot; enabled=True)
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment],  filename="small_claims", title="All forms to deliver to court", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, affidavitofindigency_attachment],   filename="small_claims", title="All forms to deliver to court", enabled=True)
 ---
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
