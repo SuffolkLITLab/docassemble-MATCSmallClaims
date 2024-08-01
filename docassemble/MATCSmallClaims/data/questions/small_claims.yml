@@ -169,8 +169,8 @@ code: |
   small_claims_intro
   interview_order_small_claims
   signature_date
-  users[0].signature
   small_claims_preview_question 
+  users[0].signature
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
@@ -270,7 +270,7 @@ subquestion: |
     $5,001 - $7,000| $150
     More than $7,000 | $150   
   
-  If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it [here](https://www.mass.gov/indigency-waiver-of-court-fees).
+  If you cannot afford to pay your filing fee, you can ask the court to waive it using this interview.
   
   Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
   
@@ -487,7 +487,7 @@ question: |
   % if al_person_answering == "attorney":
   Are there additional plaintiffs?
   % else:
-  Are you representing an additional party?
+  Is anyone else on your side?
   % endif
 subquestion: |
   % if len(users.elements) > 1:  
@@ -500,7 +500,7 @@ fields:
 id: user i's address
 question: |
   % if i > 0 and al_person_answering == "user":
-  What is your address?
+  What is their address?
   % elif i == 0 and al_person_answering == "user":
   What is ${ users[i] }'s address?
   % else:
@@ -779,17 +779,10 @@ id: wants_fee_waiver
 question: |
   You may qualify for a fee waiver
 subquestion: |
-  There is a filing fee ranging from $50 to $150. 
+  There is a filing fee ranging from $40 to $150. 
   
-  But you may need to pay:
+  However, if you earn under a certain amount, you can ask the court to help pay the filing fee.
   
- 
-    or to publish notice if you cannot find them to serve them in person.
-
-  The judge may also want to know your income to decide if you can afford to
-  guarantee the **surety bond**.
-
-  If you earn under a certain amount, you can ask the court to help pay the filing fee.
 fields:
   - Do you want to find out if you qualify for a fee waiver?: wants_fee_waiver
     datatype: yesnoradio
