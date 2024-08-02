@@ -17,34 +17,6 @@ metadata:
   before_you_start: |
     This interview will help you file for small claims.
     
-    Before you get started, gather:
-    
-    1. Attorney and defendant information.
-    2. Your claim which clearly states why the defendant is being sued.
-    3. The defendants' military status. 
-    
-    When you are finished, you will need to:
-    
-    1. Submit payment of the filing fee (See below).
-    
-    Amount you are claiming:	    Your filing fee:
-    $500 or less	                $40
-    $501-$2,000	                  $50
-    $2,001-$5,000	                $100
-    $5,001-$7,000                	$150
-    More than $7,000 	            $150
-    
-      If you cannot afford to pay your filing fee, you can ask the court to waive it by requesting it [here](https://www.mass.gov/indigency-waiver-of-court-fees).
-      
-      Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
-      
-      There is a time limit on filing any claim in court. This is known as the statute of limitations. While there may be exceptions, generally:
-      - A claim based on a contract must be filed in court within 6 years,
-      - A claim based on a consumer protection law must be filed in court within 4 years, and
-      - A claim resulting from negligence or intentional harm must be filed in court within 3 years.
-      
-      Most people take about 30 minutes to complete this interview.
-    
   maturity: production
   estimated_completion_minutes: 60
   estimated_completion_delta: 30
@@ -414,7 +386,7 @@ subquestion: |
   ${ collapse_template(why_contact_info_needed_template) }
 fields:  
   - Phone number: users[0].phone_number
-    required: True
+    required: False
   - Email address: users[0].email    
     datatype: email
     required: False
@@ -442,7 +414,7 @@ subquestion: |
   ${ collapse_template(why_contact_info_needed_template) }
 fields:  
   - Phone number: users[i].phone_number
-    required: True
+    required: False
   - Email address: users[i].email    
     datatype: email
     required: False
@@ -750,7 +722,7 @@ fields:
       2. If you don't use the SCRA Website, provide details supporting your claim about the defendant's military status. You can include facts from your contacts or communications with the defendant. You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status.
       
       
-      In either case, attach a copy of your search results or correspondences.
+      In either case, tell us about your search results or correspondences.
     js show if: |
       val("other_parties[i].is_current_military") === "None"
   - "I still don't know": still_unsure
