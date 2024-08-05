@@ -63,7 +63,7 @@ code: |
   al_form_type = "starts_case"  
 ---
 objects:
-  - users: ALPeopleList.using(complete_attribute= ['address.address', 'phone_number'])
+  - users: ALPeopleList.using(complete_attribute= ['name.first', 'address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
 ---
