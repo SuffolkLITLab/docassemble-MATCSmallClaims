@@ -1,6 +1,6 @@
 # docassemble.SmallClaims
 
-Small claims
+Small Claims
 
 ## Authors
 
