@@ -46,7 +46,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
 setup(name='docassemble.MATCSmallClaims',
       version='1.0',
       description=('Small Claims'),
-      long_description='# docassemble.SmallClaims\r\n\r\nSmall Claims\r\n\r\n## Authors\r\n\r\nNava Ebadollahi\r\nMark Marotta\r\nNicole Dimitri\r\n',
+      long_description='# docassemble.MATCSmallClaims\r\n\r\nSmall Claims\r\n\r\n## Authors\r\n\r\nNava Ebadollahi\r\nMark Marotta\r\nNicole Dimitri\r\n',
       long_description_content_type='text/markdown',
       author='Sam Glover',
       author_email='Nicole.Dimitri@su.suffolk.edu',
