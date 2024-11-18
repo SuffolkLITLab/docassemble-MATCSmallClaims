@@ -157,47 +157,32 @@ code: |
 features:
   progress bar: True
 ---
-question: Are you doing well?
-yesno: user_is_well
-progress: 20
----
-question: Done with the interview.
-subquestion: |
-  % if user_is_well:
-  I am glad you are doing well.
-  % else:
-  I am sorry to hear that!
-  % endif
-progress: 100
-mandatory: True
----
 id: basic questions intro screen
 question: |
   File a small claims complaint
 subquestion: |
-  % if form_approved_for_email_filing:
-  This interview can help you complete and file court forms in 3 steps:
-  % else:
-  This interview can help you complete and download forms in 3 steps:
-  % endif
+  This will help you fill out the forms to file a small claim by conducting an interview—
+  that is, by asking questions in plain language for you to answer. It will not give you 
+  legal advice.
   
-  Step 1. Answer questions that will fill in your form for you.<br>
-  Step 2. Preview the completed form.<br>
-  % if form_approved_for_email_filing:
-  Step 3. Email the form to the court using this secure website and save copies
-  for yourself for later reference.  
-  % elif al_form_type in ['starts_case','existing_case','appeal']:
-  Step 3. Download and print the final form. You will need to deliver it
-  to the court on your own.
-  % else:
-  Step 3. Download and print the final form. You will need to deliver it 
-  on your own.
-  % endif
-  
-  This site is not a lawyer. If you would like a lawyer, find [your local
-  legal aid provider](https://www.lsc.gov/what-legal-aid/find-legal-aid).
-  
+  More information on the small claims process is available on the [Massachusetts self-help 
+  website](https://www.mass.gov/small-claims), where you can watch videos and read about 
+  the small claims process. The website has several useful resources, including information 
+  about the statutes of limitations, the Massachusetts General Laws, and the Massachusetts 
+  Rules of Court.
+
   Tap the {green words} in any screen for a definition or more information.
+
+  % if form_approved_for_email_filing:
+  Once you have completed this interview, you will be able to electronically file the 
+  completed forms in the proper court.
+  % else:
+  Once you have completed this interview, you will be able to download and print the 
+  completed forms to file in the proper court.
+  % endif
+
+  If you are ready to begin the interview, please accept the **terms of use and privacy 
+  Policy**.
   
   % if chat_partners_available().help:
   Live help is currently available in this interview. Click the speech bubble
