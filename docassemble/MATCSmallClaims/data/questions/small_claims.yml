@@ -168,8 +168,8 @@ subquestion: |
   A small claim is a legal process that is less complex than a traditional civil case. Your 
   case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the Court,
   not by a judge or jury. The Uniform Small Claims Rules govern small claims cases. The 
-  procedure for bringing a small claim action can be found in the [Massachusetts General 
-  Laws: G.L c. 218, §§ 21-25](https://malegislature.gov/Laws/GeneralLaws/PartIII/TitleI/Chapter218/Section21).
+  procedure for bringing a small claim action can be found in the [Mass. Gen. 
+  Laws, ch. 218, §§ 21-25](https://malegislature.gov/Laws/GeneralLaws/PartIII/TitleI/Chapter218/Section21).
 
   
   More information on the small claims process is available on the [Massachusetts self-help 
@@ -509,45 +509,50 @@ fields:
     required: False
 
 ---
-template: maximum_amount
+template: claim_amounts
 subject:  |
-  What is the maximum amount for a small claim?  
+  Claims greater than $7,000
 content:  |
-
-  The base amount you are suing for (including the value of property) must be $7,000 or less. There are two exceptions:
+  The base amount you are suing for (including the value of property) must be $7,000 or 
+  less. There are two exceptions:
   
   1. If your claim is based on property damage from an automobile accident, the amount of your claim can be more than $7,000.
-  
-  2. If you are suing for unfair and deceptive practices under Chapter 93A, or under the Security Deposit Statute, the court may award additional damages above the $7,000 limit. The base amount of your claim must still be $7,000 or less.
+  2. If you are suing for unfair and deceptive practices under [Mass. Gen. Laws ch. 93A](https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXV/Chapter93A) or under the security deposit statute, [Mass. Gen. Laws ch. 186, § 15B](https://malegislature.gov/Laws/GeneralLaws/PartII/TitleI/Chapter186/Section15B), the court may award additional damages above the $7,000 limit, but the base amount of your claim must be $7,000 or less.
 ---
-template: added_penalties
-subject:  |
-  Added penalties by statute
-content:  |
-  If a law allows you to seek double or triple the amount of your claim, then you must include this specific information in your statement of claim.
----
-id: claim details
+id: claim amount
 question: |
-  Plaintiff's Claim
-subquestion: |
-  ${ card_start("What is a Small Claim", color="info", icon="comment") }
-  A small claim is a legal process that is less complex than a traditional civil case. Your case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the Court -- not by a judge or jury. The Uniform Small Claims Rues govern small claims cases. The procedure for bringing a small claim action can be found in the Massachusetts General Laws: [G.L c. 218, §§ 21-25](https://malegislature.gov/Laws/GeneralLaws/PartIII/TitleI/Chapter218/Section21) 
-  ${ card_end() }
-
-  Fill in the amount you are suing for and clearly state your claim so the defendant can understand why they are being sued. Provide the date of the event that is the basis of your claim and requests for relief. This provides the Defendant with a breakdown of the amount being claimed and helps the court decide the amount of any award.
-  
-  ${ collapse_template(maximum_amount) } 
-  ${ collapse_template(added_penalties) } 
-
+  Claim amount
 fields: 
-  - "Amount defendant owes you": defendant_owes_amount
+  - Amount defendant owes you: defendant_owes_amount
     datatype: currency
     min: 0
-  - "Filing fee": defendant_court_costs_amount
+  - "Your claim is for more than $7,000": reason_claim_exceeds_7000
+    datatype: radio
+    choices:
+      - My claim is based on property damage from an auto accident
+      - I am suing for unfair and deceptive practices under Chapter 93A or under the security deposit statute; the base amount of my claim is still $7,000 or less
+    under text: ${ collapse_template(claim_amounts) } 
+    js show if: |
+      val("defendant_owes_amount") > 7000
+  - Filing fee: defendant_court_costs_amount
     datatype: currency
     min: 0
-    disabled: true
-  - "Reason for your claim": reason_for_suing_defendant
+    # disabled: true
+---
+id: statement of claim
+question: Describe your claim
+subquestion: |
+  Clearly state your claim so the defendant can understand why you are suing them. Make 
+  sure to include:
+  
+  * The date(s) of the event that is the basis of your claim
+  * Your requests for relief
+  * A breakdown or calculation showing how you arrived at the amount of your claim
+
+  If a law allows you to seek double or triple the amount of your claim, then you must 
+  include this specific information in your statement of claim.
+fields:
+  - Reason for your claim: reason_for_suing_defendant
     input type: area
     rows: 10
     label above field: True
