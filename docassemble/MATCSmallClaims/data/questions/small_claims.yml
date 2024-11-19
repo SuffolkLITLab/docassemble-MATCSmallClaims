@@ -542,7 +542,7 @@ fields:
       <div class="da-container row">
         <span for="filing_fee_display" class="col-md-4 datext-right">Filing fee</span>
         <span class="col-md-8" aria-live="polite">
-          $<span id="filing_fee_display"></span>
+          $<span id="filing_fee_display">--</span>
         </span>
       </div>
 script: |
@@ -579,7 +579,7 @@ script: |
       let claimAmount = val("defendant_owes_amount");
       if (!claimAmount) {
         setField("filing_fee", null);
-        $("#filing_fee_display").text('');
+        $("#filing_fee_display").text('--');
         return;
       }
       fees.forEach((el) => {
