@@ -203,40 +203,46 @@ validation code: |
   if not acknowledged_information_use:
     validation_error("You must accept the terms of use to continue.", field="acknowledged_information_use")
 ---
-id: Small_claims
+id: small claims interview info
 continue button field: small_claims_intro
 question: |
   Information for the small claims complaint process
 subquestion: |
-  This interview will help you file a small claims complaint.
+  This interview will help you file a small claims complaint. In order to complete the 
+  interview you will need to know:
   
-  Before you get started, gather:
+  1. The full name, address, and phone number or email address of anyone you intend to sue
+  2. A summary or reason why you are suing them
+  3. The military status of anyone you intend to sue (information about verifying military status will be provided)
   
-  1. Address of anyone you intend to sue.
-  2. Why you are suing them.
-  3. Military statuses of anyone you intend to sue. 
-  
-  When you are finished, you will need to:
-  
-  1. Pay the filing fee. 
+  When you are finished, you can either:
 
-  Amount you are claiming | Filing Fee 
-           ------|----
-    $500 or less | $40
-    $501 - $2,000 | $50
-    $2,001 - $5,000| $100 
-    $5,001 - $7,000| $150
-    More than $7,000 | $150   
+  * File your claim electronically, or
+  * Download and print your claim forms so you can deliver them to the courthouse yourself
   
-  If you cannot afford to pay your filing fee, you can ask the court to waive it using this interview.
-  
-  Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
-  
-  There is a time limit on filing any claim in court. This is known as the statute of limitations. While there may be exceptions, generally:
+  You will also need to pay the filing fee. 
 
-  - A claim based on a contract must be filed in court within 6 years,
-  - A claim based on a consumer protection law must be filed in court within 4 years, and
-  - A claim resulting from negligence or intentional harm must be filed in court within 3 years.
+  Amount of your claim | Filing fee 
+  ---------------------|-----------
+  $500 or less         | $40
+  $501–2,000           | $50
+  $2,001–5,000         | $100 
+  $5,001–7,000         | $150
+  More than $7,000     | $150   
+  
+  If you cannot afford to pay the filing fee you can ask the court for a waiver. You can 
+  complete a fee-waiver form during this interview.
+  
+  Please note that this interview cannot tell you what you should say to meet the legal 
+  basis needed for a judge to rule in your favor. The court can provide information about 
+  how to file a claim, but cannot give legal advice.
+  
+  There is a time limit on filing any claim in court. This is known as the statute of 
+  limitations. While there may be exceptions, generally:
+
+  * A claim based on a contract must be filed in court within 6 years
+  * A claim based on a consumer protection law must be filed in court within 4 years
+  * A claim resulting from negligence or intentional harm must be filed in court within 3 years.
 
   Most people take about 30 minutes to complete this interview.
 ---
