@@ -539,16 +539,11 @@ fields:
     input type: hidden
     min: 0
   - html: |
-      <div class="da-container da-form-group row da-field-container da-field-container-datatype-currency">
-        <label for="filing_fee_display" class="col-md-4 col-form-label da-form-label datext-right">
-          Filing fee
-        </label>
-        <div class="col-md-8 dafieldpart" aria-live="polite">
-          <div class="input-group">
-            <span class="input-group-text">$</span>
-            <span class="form-control dacurrency" id="filing_fee_display" style="background-color: var(--bs-secondary-bg);"></span>
-          </div>
-        </div>
+      <div class="da-container row">
+        <span for="filing_fee_display" class="col-md-4 datext-right">Filing fee</span>
+        <span class="col-md-8" aria-live="polite">
+          $<span id="filing_fee_display"></span>
+        </span>
       </div>
 script: |
   <script>
