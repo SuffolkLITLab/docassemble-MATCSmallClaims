@@ -118,7 +118,7 @@ code: |
   trial_court.department
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
-  defendant_court_costs_amount
+  filing_fee
   reason_for_suing_defendant
   nav.set_section("mediation")
   is_willing_mediation
@@ -509,7 +509,7 @@ fields:
     required: False
 
 ---
-template: claim_amounts
+template: claims_greater_than_7000
 subject:  |
   Claims greater than $7,000
 content:  |
@@ -531,13 +531,72 @@ fields:
     choices:
       - My claim is based on property damage from an auto accident
       - I am suing for unfair and deceptive practices under Chapter 93A or under the security deposit statute; the base amount of my claim is still $7,000 or less
-    under text: ${ collapse_template(claim_amounts) } 
+    under text: ${ collapse_template(claims_greater_than_7000) } 
     js show if: |
       val("defendant_owes_amount") > 7000
-  - Filing fee: defendant_court_costs_amount
+  - Filing fee: filing_fee
     datatype: currency
+    input type: hidden
     min: 0
-    # disabled: true
+  - html: |
+      <div class="da-container da-form-group row da-field-container da-field-container-datatype-currency">
+        <label for="filing_fee_display" class="col-md-4 col-form-label da-form-label datext-right">
+          Filing fee
+        </label>
+        <div class="col-md-8 dafieldpart" aria-live="polite">
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <span class="form-control dacurrency" id="filing_fee_display" style="background-color: var(--bs-secondary-bg);"></span>
+          </div>
+        </div>
+      </div>
+script: |
+  <script>
+    const fees = [
+      {
+        min: 0,
+        max: 500,
+        fee: 40,
+      },
+      {
+        min: 501,
+        max: 2000,
+        fee: 50,
+      },
+      {
+        min: 2001,
+        max: 5000,
+        fee: 100,
+      },
+      {
+        min: 5001,
+        max: 7000,
+        fee: 150,
+      },
+      {
+        min: 7001,
+        max: "none",
+        fee: 150,
+      }
+    ];
+  
+    function getFilingFee() {
+      let claimAmount = val("defendant_owes_amount");
+      if (!claimAmount) {
+        setField("filing_fee", null);
+        $("#filing_fee_display").text('');
+        return;
+      }
+      fees.forEach((el) => {
+        if (claimAmount >= el.min && (claimAmount <= el.max || el.max === "none")) {
+          setField("filing_fee", el.fee);
+          $("#filing_fee_display").text(el.fee);
+        }
+      });
+    }
+  
+    $(getField("defendant_owes_amount")).on("change", getFilingFee);
+  </script>  
 ---
 id: statement of claim
 question: Describe your claim
@@ -756,9 +815,9 @@ id: wants_fee_waiver
 question: |
   You may qualify for a fee waiver
 subquestion: |
-  There is a filing fee ranging from $40 to $150. 
+  Based on the amount of your claim the filing fee will be ${ currency(filing_fee) }. 
   
-  However, if you earn under a certain amount, you can ask the court to help pay the filing fee.
+  However, if you earn under a certain amount you can ask the court to help pay the filing fee.
   
 fields:
   - Do you want to find out if you qualify for a fee waiver?: wants_fee_waiver
@@ -769,7 +828,7 @@ code: |
 ---
 code: |
   fees['Filing fee'].waive = True
-  fees['Filing fee'].amount= defendant_court_costs_amount 
+  fees['Filing fee'].amount= filing_fee 
   set_fee_waiver_defaults = True
 ---
 code: |
@@ -872,10 +931,10 @@ review:
     button: |
       **Defendant owes amount**:
       ${ currency(defendant_owes_amount) }
-  - Edit: defendant_court_costs_amount
+  - Edit: filing_fee
     button: |
       **Defendant court costs amount**:
-      ${ currency(defendant_court_costs_amount) }
+      ${ currency(filing_fee) }
   - Edit: reason_for_suing_defendant
     button: |
       **Reason for suing defendant**:
@@ -1071,7 +1130,7 @@ attachment:
       - "defendant1_phone_number": ${ defendants[0].phone_number }
       - "defendant2_phone_number": ${ defendants[1].phone_number }
       - "defendant_owes_amount": ${ currency(defendant_owes_amount) }
-      - "defendant_court_costs_amount": ${ currency(defendant_court_costs_amount) }
+      - "defendant_court_costs_amount": ${ currency(filing_fee) }
       - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
       - "signature_date": ${ signature_date }
       - "user_signature": ${ users[0].signature }
