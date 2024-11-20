@@ -118,7 +118,7 @@ code: |
   trial_court.department
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
-  defendant_court_costs_amount
+  filing_fee
   reason_for_suing_defendant
   nav.set_section("mediation")
   is_willing_mediation
@@ -164,6 +164,13 @@ subquestion: |
   This will help you fill out the forms to file a small claim by conducting an interview—
   that is, by asking questions in plain language for you to answer. It will not give you 
   legal advice.
+
+  A small claim is a legal process that is less complex than a traditional civil case. Your 
+  case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the Court,
+  not by a judge or jury. The Uniform Small Claims Rules govern small claims cases. The 
+  procedure for bringing a small claim action can be found in the [Mass. Gen. 
+  Laws, ch. 218, §§ 21-25](https://malegislature.gov/Laws/GeneralLaws/PartIII/TitleI/Chapter218/Section21).
+
   
   More information on the small claims process is available on the [Massachusetts self-help 
   website](https://www.mass.gov/small-claims), where you can watch videos and read about 
@@ -203,40 +210,46 @@ validation code: |
   if not acknowledged_information_use:
     validation_error("You must accept the terms of use to continue.", field="acknowledged_information_use")
 ---
-id: Small_claims
+id: small claims interview info
 continue button field: small_claims_intro
 question: |
   Information for the small claims complaint process
 subquestion: |
-  This interview will help you file a small claims complaint.
+  This interview will help you file a small claims complaint. In order to complete the 
+  interview you will need to know:
   
-  Before you get started, gather:
+  1. The full name, address, and phone number or email address of anyone you intend to sue
+  2. A summary or reason why you are suing them
+  3. The military status of anyone you intend to sue (information about verifying military status will be provided)
   
-  1. Address of anyone you intend to sue.
-  2. Why you are suing them.
-  3. Military statuses of anyone you intend to sue. 
-  
-  When you are finished, you will need to:
-  
-  1. Pay the filing fee. 
+  When you are finished, you can either:
 
-  Amount you are claiming | Filing Fee 
-           ------|----
-    $500 or less | $40
-    $501 - $2,000 | $50
-    $2,001 - $5,000| $100 
-    $5,001 - $7,000| $150
-    More than $7,000 | $150   
+  * File your claim electronically, or
+  * Download and print your claim forms so you can deliver them to the courthouse yourself
   
-  If you cannot afford to pay your filing fee, you can ask the court to waive it using this interview.
-  
-  Please note that this interview cannot tell you what you should say to meet the legal basis needed for a judge to rule in your favor. The court can provide information about how to file a claim, but cannot give legal advice.
-  
-  There is a time limit on filing any claim in court. This is known as the statute of limitations. While there may be exceptions, generally:
+  You will also need to pay the filing fee. 
 
-  - A claim based on a contract must be filed in court within 6 years,
-  - A claim based on a consumer protection law must be filed in court within 4 years, and
-  - A claim resulting from negligence or intentional harm must be filed in court within 3 years.
+  Amount of your claim | Filing fee 
+  ---------------------|-----------
+  $500 or less         | $40
+  $501–2,000           | $50
+  $2,001–5,000         | $100 
+  $5,001–7,000         | $150
+  More than $7,000     | $150   
+  
+  If you cannot afford to pay the filing fee you can ask the court for a waiver. You can 
+  complete a fee-waiver form during this interview.
+  
+  Please note that this interview cannot tell you what you should say to meet the legal 
+  basis needed for a judge to rule in your favor. The court can provide information about 
+  how to file a claim, but cannot give legal advice.
+  
+  There is a time limit on filing any claim in court. This is known as the statute of 
+  limitations. While there may be exceptions, generally:
+
+  * A claim based on a contract must be filed in court within 6 years
+  * A claim based on a consumer protection law must be filed in court within 4 years
+  * A claim resulting from negligence or intentional harm must be filed in court within 3 years.
 
   Most people take about 30 minutes to complete this interview.
 ---
@@ -496,47 +509,107 @@ fields:
     required: False
 
 ---
-template: maximum_amount
+template: claims_greater_than_7000
 subject:  |
-  What is the maximum amount for a small claim?  
+  Claims greater than $7,000
 content:  |
-
-  The base amount you are suing for (including the value of property) must be $7,000 or less. There are two exceptions:
+  The base amount you are suing for (including the value of property) must be $7,000 or 
+  less. There are two exceptions:
   
   1. If your claim is based on property damage from an automobile accident, the amount of your claim can be more than $7,000.
-  
-  2. If you are suing for unfair and deceptive practices under Chapter 93A, or under the Security Deposit Statute, the court may award additional damages above the $7,000 limit. The base amount of your claim must still be $7,000 or less.
+  2. If you are suing for unfair and deceptive practices under [Mass. Gen. Laws ch. 93A](https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXV/Chapter93A) or under the security deposit statute, [Mass. Gen. Laws ch. 186, § 15B](https://malegislature.gov/Laws/GeneralLaws/PartII/TitleI/Chapter186/Section15B), the court may award additional damages above the $7,000 limit, but the base amount of your claim must be $7,000 or less.
 ---
-template: added_penalties
-subject:  |
-  Added penalties by statute
-content:  |
-  If a law allows you to seek double or triple the amount of your claim, then you must include this specific information in your statement of claim.
----
-id: Plaintiff s Claim
+id: claim amount
 question: |
-  Plaintiff's Claim
-subquestion: |
-  ${ card_start("What is a Small Claim", color="info", icon="comment") }
-  A small claim is a legal process that is less complex than a traditional civil case. Your case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the Court -- not by a judge or jury. The Uniform Small Claims Rues govern small claims cases. The procedure for bringing a small claim action can be found in the Massachusetts General Laws: [G.L c. 218, §§ 21-25](https://malegislature.gov/Laws/GeneralLaws/PartIII/TitleI/Chapter218/Section21) 
-  ${ card_end() }
-
-  Fill in the amount you are suing for and clearly state your claim so the defendant can understand why they are being sued. Provide the date of the event that is the basis of your claim and requests for relief. This provides the Defendant with a breakdown of the amount being claimed and helps the court decide the amount of any award.
-  
-  ${ collapse_template(maximum_amount) } 
-  ${ collapse_template(added_penalties) } 
-
+  Claim amount
 fields: 
-  - "Defendant owes amount": defendant_owes_amount
+  - Amount defendant owes you: defendant_owes_amount
     datatype: currency
     min: 0
-  - "Defendant court costs amount": defendant_court_costs_amount
+  - "Your claim is for more than $7,000": reason_claim_exceeds_7000
+    datatype: radio
+    choices:
+      - My claim is based on property damage from an auto accident
+      - I am suing for unfair and deceptive practices under Chapter 93A or under the security deposit statute; the base amount of my claim is still $7,000 or less
+    under text: ${ collapse_template(claims_greater_than_7000) } 
+    js show if: |
+      val("defendant_owes_amount") > 7000
+  - Filing fee: filing_fee
     datatype: currency
+    input type: hidden
     min: 0
-  - "Reason for suing defendant": reason_for_suing_defendant
+  - html: |
+      <div class="da-container row">
+        <span for="filing_fee_display" class="col-md-4 datext-right">Filing fee</span>
+        <span class="col-md-8" aria-live="polite">
+          $<span id="filing_fee_display">--</span>
+        </span>
+      </div>
+script: |
+  <script>
+    const fees = [
+      {
+        min: 0,
+        max: 500,
+        fee: 40,
+      },
+      {
+        min: 501,
+        max: 2000,
+        fee: 50,
+      },
+      {
+        min: 2001,
+        max: 5000,
+        fee: 100,
+      },
+      {
+        min: 5001,
+        max: 7000,
+        fee: 150,
+      },
+      {
+        min: 7001,
+        max: "none",
+        fee: 150,
+      }
+    ];
+  
+    function getFilingFee() {
+      let claimAmount = val("defendant_owes_amount");
+      if (!claimAmount) {
+        setField("filing_fee", null);
+        $("#filing_fee_display").text('--');
+        return;
+      }
+      fees.forEach((el) => {
+        if (claimAmount >= el.min && (claimAmount <= el.max || el.max === "none")) {
+          setField("filing_fee", el.fee);
+          $("#filing_fee_display").text(el.fee);
+        }
+      });
+    }
+  
+    $(getField("defendant_owes_amount")).on("change", getFilingFee);
+  </script>  
+---
+id: statement of claim
+question: Describe your claim
+subquestion: |
+  Clearly state your claim so the defendant can understand why you are suing them. Make 
+  sure to include:
+  
+  * The date(s) of the event that is the basis of your claim
+  * Your requests for relief
+  * A breakdown or calculation showing how you arrived at the amount of your claim
+
+  If a law allows you to seek double or triple the amount of your claim, then you must 
+  include this specific information in your statement of claim.
+fields:
+  - Reason for your claim: reason_for_suing_defendant
     input type: area
     rows: 10
-    
+    label above field: True
 ---
 template: mediation_learn_more
 subject:  |
@@ -737,9 +810,9 @@ id: wants_fee_waiver
 question: |
   You may qualify for a fee waiver
 subquestion: |
-  There is a filing fee ranging from $40 to $150. 
+  Based on the amount of your claim the filing fee will be ${ currency(filing_fee) }. 
   
-  However, if you earn under a certain amount, you can ask the court to help pay the filing fee.
+  However, if you earn under a certain amount you can ask the court to help pay the filing fee.
   
 fields:
   - Do you want to find out if you qualify for a fee waiver?: wants_fee_waiver
@@ -750,7 +823,7 @@ code: |
 ---
 code: |
   fees['Filing fee'].waive = True
-  fees['Filing fee'].amount= defendant_court_costs_amount 
+  fees['Filing fee'].amount= filing_fee 
   set_fee_waiver_defaults = True
 ---
 code: |
@@ -853,10 +926,10 @@ review:
     button: |
       **Defendant owes amount**:
       ${ currency(defendant_owes_amount) }
-  - Edit: defendant_court_costs_amount
+  - Edit: filing_fee
     button: |
       **Defendant court costs amount**:
-      ${ currency(defendant_court_costs_amount) }
+      ${ currency(filing_fee) }
   - Edit: reason_for_suing_defendant
     button: |
       **Reason for suing defendant**:
@@ -1052,7 +1125,7 @@ attachment:
       - "defendant1_phone_number": ${ defendants[0].phone_number }
       - "defendant2_phone_number": ${ defendants[1].phone_number }
       - "defendant_owes_amount": ${ currency(defendant_owes_amount) }
-      - "defendant_court_costs_amount": ${ currency(defendant_court_costs_amount) }
+      - "defendant_court_costs_amount": ${ currency(filing_fee) }
       - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
       - "signature_date": ${ signature_date }
       - "user_signature": ${ users[0].signature }
