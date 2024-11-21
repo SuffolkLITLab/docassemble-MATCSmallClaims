@@ -835,10 +835,12 @@ fields:
     datatype: yesno
     js show if: |
       val("other_parties[i].is_current_military") === "None"
-  - "How do you know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
+  - "If yes, how do you know?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
-    hide if: still_unsure
+    show if:
+      variable: other_parties[i].is_current_military
+      is: True
   - "Why is it that you don't know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
