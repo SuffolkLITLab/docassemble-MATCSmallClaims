@@ -716,18 +716,65 @@ question: |
   % else:
   Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
   % endif
-subquestion: | 
-  To find the exact legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
-  
-  If the defendant is not a corporation and is doing business under a trade name ("doing business as," or d/b/a): 
 
-  - Verify the name by calling the city or town hall where the business is located.
+fields:      
+  - field: other_parties[i].person_type
+    label: Is this a person, or a business?
+    input type: radio
+    required: True
+    choices:
+      - Person: person
+      - Business or organization: business
 
-  - Any entity that does business under a trade name is required to register in the local city or town clerk's office where the business is located.
+  - note: |
+      To find the exact legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
+      
+      If the defendant is not a corporation and is doing business under a trade name ("doing business as," or d/b/a): 
+    
+      - Verify the name by calling the city or town hall where the business is located.
+    
+      - Any entity that does business under a trade name is required to register in the local city or town clerk's office where the business is located.
+
+    show if:
+      variable: other_parties[i].person_type
+      is: business
   
-fields:
-  - code: |
-      other_parties[i].name_fields(person_or_business='unsure')
+  - field: other_parties[i].name.first
+    label: First name
+    required: True
+    show if: 
+      variable: other_parties[i].person_type
+      is: person
+
+  - field: other_parties[i].name.middle
+    label: Middle name
+    required: False
+    show if: 
+      variable: other_parties[i].person_type
+      is: person
+
+  - field: other_parties[i].name.last
+    label: Last name
+    required: True
+    show if: 
+      variable: other_parties[i].person_type
+      is: person
+
+  - Suffix: other_parties[i].name.suffix
+    required: False
+    show if: 
+      variable: other_parties[i].person_type
+      is: person
+    code: |
+      name_suffix()
+
+  - field: other_parties[i].name.first
+    label: Name of business or organization
+    required: True
+    show if: 
+      variable: other_parties[i].person_type
+      is: business
+
 
 ---
 sets:
