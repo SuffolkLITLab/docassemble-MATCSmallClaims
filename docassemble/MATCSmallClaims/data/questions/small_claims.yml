@@ -760,20 +760,13 @@ fields:
       variable: other_parties[i].person_type
       is: person
 
-  - field: other_parties[i].name.suffix
-    label: Suffix
-    choices:
-      - "Jr."
-      - "Sr."
-      - "II"
-      - "III"
-      - "IV"
-      - "V"
-      - "VI"
+  - Suffix: other_parties[i].name.suffix
     required: False
     show if: 
       variable: other_parties[i].person_type
       is: person
+    code: |
+      name_suffix()
 
   - field: other_parties[i].name.first
     label: Name of business or organization
