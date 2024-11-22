@@ -156,6 +156,7 @@ code: |
 ---
 features:
   progress bar: True
+  css: styles.css
 ---
 id: basic questions intro screen
 question: |
@@ -507,7 +508,57 @@ fields:
     default: ${ AL_DEFAULT_STATE }
   - ${ users[i].address.zip_label}: users[i].address.zip
     required: False
+---
+if: |
+  len(all_matches) and all_courts.filter_courts(allowed_courts) 
+id: choose a court (courts matching provided address were found)
+question: |
+  % if al_form_type == 'starts_case':
+  What court do you want to file in?
+  % elif al_form_type == 'appeal':
+  What is the name of the trial court your case was originally filed in?
+  % else:
+  What court is your case in?
+  % endif
+subquestion: |
+  % if not al_form_type == 'starts_case':
+  Look at your court paperwork. Match the name listed there.
+  % endif
 
+  % if len(all_matches) > 0:
+  Below is a map of the court(s) that serve
+  the address you gave us, 
+  % if isinstance(addresses_to_search, Iterable):
+  ${comma_and_list([address.on_one_line() for address in addresses_to_search],comma_string='; ')}.
+  % else:
+  ${addresses_to_search.on_one_line()}
+  % endif
+  
+  ${map_of(combined_locations(all_matches))}
+  % endif
+  
+  ${ collapse_template(how_to_pick_court_help_template) }  
+fields:
+  - no label: trial_court
+    datatype: object_radio
+    choices: all_matches
+    none of the above: True
+    disable others: True
+    object labeler: court_short_description
+    show if: 
+      code: |
+        len(all_matches)      
+  - note: |
+      Does the list above look wrong? If your case was filed in
+      a court we didn't list, choose from the full list below.
+    show if: 
+      code: |
+        len(all_matches)
+  - no label: trial_court
+    datatype: object
+    object labeler: court_short_label
+    choices: all_courts.filter_courts(allowed_courts)
+    css class: not-required-if-disabled
 ---
 template: claims_greater_than_7000
 subject:  |
