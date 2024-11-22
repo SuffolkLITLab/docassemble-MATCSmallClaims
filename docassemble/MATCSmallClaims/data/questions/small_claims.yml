@@ -114,7 +114,6 @@ code: |
   other_parties[0].address.address
   other_parties[0].phone_number
   other_parties[0].is_current_military
-  other_parties[0].military_affidavit_facts
   trial_court.department
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
@@ -844,7 +843,8 @@ fields:
   - "Why is it that you don't know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
-    show if: still_unsure
+    js show if: | 
+      val("still_unsure") == true && val("other_parties[i].is_current_military") === "None"
   - note: |
       The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
     show if: still_unsure
