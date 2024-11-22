@@ -67,6 +67,13 @@ objects:
   - users: ALPeopleList.using(complete_attribute= ['name.first', 'address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
+  - exhibit_attachment: ALExhibitDocument.using(
+          title="Exhibits",
+          filename="exhibits",
+          add_page_numbers=True,
+          include_table_of_contents=True,
+          include_exhibit_cover_pages=True,
+        )
 ---
 sections:
   - plaintiff_question: Plaintiff information
@@ -120,6 +127,8 @@ code: |
   defendant_owes_amount
   filing_fee
   reason_for_suing_defendant
+  if exhibit_attachment.exhibits.has_exhibits:
+    exhibit_attachment.exhibits.gather()
   nav.set_section("mediation")
   is_willing_mediation
   trial_court
@@ -605,13 +614,12 @@ subquestion: |
 
   If a law allows you to seek double or triple the amount of your claim, then you must 
   include this specific information in your statement of claim.
+
+  You will be able to attach supporting documents on the next screen.
 fields:
   - Reason for your claim: reason_for_suing_defendant
     input type: area
     rows: 10
-    label above field: True
-  - You can attach documents that support your claim: supporting_documents
-    datatype: files
     label above field: True
 ---
 template: mediation_learn_more
@@ -984,11 +992,13 @@ review:
     button: |
       **Reason for suing defendant**:
       > ${ single_paragraph(reason_for_suing_defendant) }
-  - Edit: supporting_documents
+  - Edit: exhibit_attachment.revisit
     button: |
-      **Supporting documents**:
+      **Supporting exhibits**:
       
-      ${ supporting_documents }
+      % for item in exhibit_attachment:
+      - ${ item }
+      % endfor
   - Edit: is_willing_mediation
     button: |
       **Is willing mediation**:
@@ -1106,6 +1116,15 @@ edit:
   - phone_number
 confirm: True
 ---
+id: revisit exhibit_attachment
+continue button field: exhibit_attachment.revisit
+question: |
+  Edit your supporting exhibits
+subquestion: |
+  ${ exhibit_attachment.table }
+
+  ${ exhibit_attachment.add_action() }
+---
 id: download small_claims
 event: small_claims_download
 question: |
@@ -1132,8 +1151,8 @@ objects:
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, affidavitofindigency_attachment],   filename="small_claims", title="All forms to deliver to court", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to deliver to court", enabled=True)
 ---
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
