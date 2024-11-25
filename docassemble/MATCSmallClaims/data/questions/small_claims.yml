@@ -918,22 +918,7 @@ code: |
 id: small claims review screen
 event: review_small_claims
 question: |
-  Review your answers
-subquestion: |
-  Depending on the court in which you filed the claim, you may have the option to file your forms electronically following your review and payment of the filing fee.
-
-  If you are unable to file electronically, please print out the completed forms. You may either drop off or mail the completed forms, along with the filing fee, to the Clerk-Magistrate's office of the court in which you filed the claim. The filing fee may be paid in cash, with a credit card, or by a check or money order made payable to the court.
-
-  Once you have filed your small claim, you will be assigned a hearing date in court. A Clerk-Magistrate or an Assistant Clerk-Magistrate will preside over this hearing.
-
-  If you intend to submit documents or utilize other exhibits, be sure to bring extra copies of these to your court hearing. You should provide one set for the Clerk-Magistrate and one set for each Defendant.
-
-  As the Plaintiff, you will be required to appear at all scheduled court dates. If you do not appear in court as requested, your case may be dismissed.
-
-  It is your responsibility as Plaintiff to notify the court if you later resolve the case outside of court. Should this occur, you may be required to file a notice to officially close your case.
-
-  If the Defendants do not attend the hearing, the Clerk-Magistrate may still require you to prove the value of the damages that you included in your claim. At each scheduled hearing, please be prepared to provide evidence of the damages you incurred.
-  
+  Review your answers 
 review:
   - Edit: who_is_filling_out_this_form
     button: |
@@ -992,13 +977,27 @@ review:
     button: |
       **Reason for suing defendant**:
       > ${ single_paragraph(reason_for_suing_defendant) }
-  - Edit: exhibit_attachment.revisit
+  - Edit: exhibit_attachment.exhibits.has_exhibits
     button: |
+      **Exhibits attached?**
+      
+      % if exhibit_attachment.exhibits.has_exhibits:
+      Yes
+      % elif not exhibit_attachment.exhibits.has_exhibits:
+      No
+      % endif
+  - note: |
       **Supporting exhibits**:
       
-      % for item in exhibit_attachment:
-      - ${ item }
-      % endfor
+      % if exhibit_attachment.exhibits.there_are_any:
+      ${ exhibit_attachment.exhibits.in_progress_exhibits }
+      % else:
+      You have not attached any exhibits yet
+      % endif
+
+      ${ exhibit_attachment.exhibits.add_action() }
+    css class: bg-secondary-subtle
+    show if: exhibit_attachment.exhibits.has_exhibits
   - Edit: is_willing_mediation
     button: |
       **Is willing mediation**:
@@ -1065,7 +1064,6 @@ edit:
   - phone_number
   - Zip_code
 confirm: True
-
 ---
 continue button field: users.revisit
 question: |
@@ -1121,7 +1119,7 @@ continue button field: exhibit_attachment.revisit
 question: |
   Edit your supporting exhibits
 subquestion: |
-  ${ exhibit_attachment.table }
+  ${ exhibit_attachment.exhibits.rearrange_exhibits_table }
 
   ${ exhibit_attachment.add_action() }
 ---
