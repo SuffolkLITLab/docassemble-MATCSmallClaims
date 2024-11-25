@@ -16,7 +16,6 @@ metadata:
     If you are a plaintiff, you can use this interview to file a notice of your small claim with the court.
   before_you_start: |
     This interview will help you to file a notice of your small claim with the court.
-    
   maturity: production
   estimated_completion_minutes: 60
   estimated_completion_delta: 30
@@ -164,7 +163,7 @@ code: |
 ---
 features:
   progress bar: True
-  bootstrap theme: bootstrap.min.css
+  bootstrap theme: bootstrap.css
   css: styles.css
 ---
 id: basic questions intro screen
