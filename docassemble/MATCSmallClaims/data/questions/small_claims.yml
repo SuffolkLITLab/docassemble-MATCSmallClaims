@@ -67,6 +67,13 @@ objects:
   - users: ALPeopleList.using(complete_attribute= ['name.first', 'address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
+  - exhibit_attachment: ALExhibitDocument.using(
+          title="Exhibits",
+          filename="exhibits",
+          add_page_numbers=True,
+          include_table_of_contents=True,
+          include_exhibit_cover_pages=True,
+        )
 ---
 sections:
   - plaintiff_question: Plaintiff information
@@ -124,7 +131,8 @@ code: |
   defendant_owes_amount
   filing_fee
   reason_for_suing_defendant
-
+  if exhibit_attachment.exhibits.has_exhibits:
+    exhibit_attachment.exhibits.gather()
   nav.set_section("mediation")
   is_willing_mediation
   trial_court
@@ -664,6 +672,8 @@ subquestion: |
 
   If a law allows you to seek double or triple the amount of your claim, then you must 
   include this specific information in your statement of claim.
+
+  You will be able to attach supporting documents on the next screen.
 fields:
   - Reason for your claim: reason_for_suing_defendant
     input type: area
@@ -969,22 +979,7 @@ code: |
 id: small claims review screen
 event: review_small_claims
 question: |
-  Review your answers
-subquestion: |
-  Depending on the court in which you filed the claim, you may have the option to file your forms electronically following your review and payment of the filing fee.
-
-  If you are unable to file electronically, please print out the completed forms. You may either drop off or mail the completed forms, along with the filing fee, to the Clerk-Magistrate's office of the court in which you filed the claim. The filing fee may be paid in cash, with a credit card, or by a check or money order made payable to the court.
-
-  Once you have filed your small claim, you will be assigned a hearing date in court. A Clerk-Magistrate or an Assistant Clerk-Magistrate will preside over this hearing.
-
-  If you intend to submit documents or utilize other exhibits, be sure to bring extra copies of these to your court hearing. You should provide one set for the Clerk-Magistrate and one set for each Defendant.
-
-  As the Plaintiff, you will be required to appear at all scheduled court dates. If you do not appear in court as requested, your case may be dismissed.
-
-  It is your responsibility as Plaintiff to notify the court if you later resolve the case outside of court. Should this occur, you may be required to file a notice to officially close your case.
-
-  If the Defendants do not attend the hearing, the Clerk-Magistrate may still require you to prove the value of the damages that you included in your claim. At each scheduled hearing, please be prepared to provide evidence of the damages you incurred.
-  
+  Review your answers 
 review:
   - Edit: who_is_filling_out_this_form
     button: |
@@ -1043,6 +1038,27 @@ review:
     button: |
       **Reason for suing defendant**:
       > ${ single_paragraph(reason_for_suing_defendant) }
+  - Edit: exhibit_attachment.exhibits.has_exhibits
+    button: |
+      **Exhibits attached?**
+      
+      % if exhibit_attachment.exhibits.has_exhibits:
+      Yes
+      % elif not exhibit_attachment.exhibits.has_exhibits:
+      No
+      % endif
+  - note: |
+      **Supporting exhibits**:
+      
+      % if exhibit_attachment.exhibits.there_are_any:
+      ${ exhibit_attachment.exhibits.in_progress_exhibits }
+      % else:
+      You have not attached any exhibits yet
+      % endif
+
+      ${ exhibit_attachment.exhibits.add_action() }
+    css class: bg-secondary-subtle
+    show if: exhibit_attachment.exhibits.has_exhibits
   - Edit: is_willing_mediation
     button: |
       **Is willing mediation**:
@@ -1109,7 +1125,6 @@ edit:
   - phone_number
   - Zip_code
 confirm: True
-
 ---
 continue button field: users.revisit
 question: |
@@ -1160,6 +1175,15 @@ edit:
   - phone_number
 confirm: True
 ---
+id: revisit exhibit_attachment
+continue button field: exhibit_attachment.revisit
+question: |
+  Edit your supporting exhibits
+subquestion: |
+  ${ exhibit_attachment.exhibits.rearrange_exhibits_table }
+
+  ${ exhibit_attachment.add_action() }
+---
 id: download small_claims
 event: small_claims_download
 question: |
@@ -1171,12 +1195,11 @@ subquestion: |
 
   ${ action_button_html(url_action('review_small_claims'), label='Edit answers', color='info') }
   
-  
   ${ al_user_bundle.download_list_html() }
   
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
-
+  
 progress: 100
 ---
 # ALDocument objects specify the metadata for each template
@@ -1187,8 +1210,8 @@ objects:
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, affidavitofindigency_attachment],   filename="small_claims", title="All forms to deliver to court", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to deliver to court", enabled=True)
 ---
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
