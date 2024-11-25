@@ -16,7 +16,6 @@ metadata:
     If you are a plaintiff, you can use this interview to file a notice of your small claim with the court.
   before_you_start: |
     This interview will help you to file a notice of your small claim with the court.
-    
   maturity: production
   estimated_completion_minutes: 60
   estimated_completion_delta: 30
@@ -64,6 +63,7 @@ code: |
   al_form_type = "starts_case"  
 ---
 objects:
+  - al_logo: DAStaticFile.using(filename="Mass-Trial-Court-Seal-final-color.png")
   - users: ALPeopleList.using(complete_attribute= ['name.first', 'address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
@@ -163,6 +163,7 @@ code: |
 ---
 features:
   progress bar: True
+  bootstrap theme: bootstrap.css
   css: styles.css
 ---
 id: basic questions intro screen
