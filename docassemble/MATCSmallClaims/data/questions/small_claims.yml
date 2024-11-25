@@ -16,7 +16,6 @@ metadata:
     If you are a plaintiff, you can use this interview to file a notice of your small claim with the court.
   before_you_start: |
     This interview will help you to file a notice of your small claim with the court.
-    
   maturity: production
   estimated_completion_minutes: 60
   estimated_completion_delta: 30
@@ -64,6 +63,7 @@ code: |
   al_form_type = "starts_case"  
 ---
 objects:
+  - al_logo: DAStaticFile.using(filename="Mass-Trial-Court-Seal-final-color.png")
   - users: ALPeopleList.using(complete_attribute= ['name.first', 'address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute="participation")
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
@@ -77,9 +77,8 @@ objects:
 ---
 sections:
   - plaintiff_question: Plaintiff information
-  - court_selection: Court selection
-  - attorney_question: Attorney information
   - defendant_question: Defendant information
+  - court_selection: Court selection
   - plaintiff_s_claim: Your claim
   - mediation: Mediation
   - wants_fee_waiver: Fee Waiver
@@ -92,8 +91,9 @@ id: interview_order_small_claims
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
-  nav.set_section("preliminary_information")
+
   small_claims_intro
+
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
@@ -101,28 +101,32 @@ code: |
     attorneys.there_are_any = False
   users.gather()
   if users.number_gathered() > 0:
+    nav.set_section("plaintiff_question")
     users[0].address.address
     users[0].phone_number
   set_progress(28)
   set_parts(subtitle=str(users))
-  nav.set_section("court_selection")
-  set_parts(subtitle=str(users))
-  set_progress(14)
-  # docket_number
-  nav.set_section("attorney_question")
+    
   attorneys.gather()
   if attorneys.number_gathered() > 0: 
+    nav.set_section("attorney_question")
     attorneys[0].address.address
     attorneys[0].phone_number
   set_progress(42)
-  nav.set_section("defendant question")
+
+  nav.set_section("defendant_question")
   other_parties.gather()
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
   other_parties[0].is_current_military
-  other_parties[0].military_affidavit_facts
+
+  nav.set_section("court_selection")
+  set_parts(subtitle=str(users))
+  set_progress(14)
+  # docket_number
   trial_court.department
+  
   nav.set_section("plaintiff_s_claim")
   defendant_owes_amount
   filing_fee
@@ -133,10 +137,12 @@ code: |
   is_willing_mediation
   trial_court
   set_progress(56)
+
   nav.set_section("wants_fee_waiver")
-  if wants_fee_waiver: 
+  if wants_fee_waiver:
     is_indigent
     set_fee_waiver_defaults
+
   nav.set_section("review_small_claims")
   users[0].states_above_true
   interview_order_small_claims = True
@@ -165,6 +171,8 @@ code: |
 ---
 features:
   progress bar: True
+  bootstrap theme: bootstrap.css
+  css: styles.css
 ---
 id: basic questions intro screen
 question: |
@@ -516,7 +524,57 @@ fields:
     default: ${ AL_DEFAULT_STATE }
   - ${ users[i].address.zip_label}: users[i].address.zip
     required: False
+---
+if: |
+  len(all_matches) and all_courts.filter_courts(allowed_courts) 
+id: choose a court (courts matching provided address were found)
+question: |
+  % if al_form_type == 'starts_case':
+  What court do you want to file in?
+  % elif al_form_type == 'appeal':
+  What is the name of the trial court your case was originally filed in?
+  % else:
+  What court is your case in?
+  % endif
+subquestion: |
+  % if not al_form_type == 'starts_case':
+  Look at your court paperwork. Match the name listed there.
+  % endif
 
+  % if len(all_matches) > 0:
+  Below is a map of the court(s) that serve
+  the address you gave us, 
+  % if isinstance(addresses_to_search, Iterable):
+  ${comma_and_list([address.on_one_line() for address in addresses_to_search],comma_string='; ')}.
+  % else:
+  ${addresses_to_search.on_one_line()}
+  % endif
+  
+  ${map_of(combined_locations(all_matches))}
+  % endif
+  
+  ${ collapse_template(how_to_pick_court_help_template) }  
+fields:
+  - no label: trial_court
+    datatype: object_radio
+    choices: all_matches
+    none of the above: True
+    disable others: True
+    object labeler: court_short_description
+    show if: 
+      code: |
+        len(all_matches)      
+  - note: |
+      Does the list above look wrong? If your case was filed in
+      a court we didn't list, choose from the full list below.
+    show if: 
+      code: |
+        len(all_matches)
+  - no label: trial_court
+    datatype: object
+    object labeler: court_short_label
+    choices: all_courts.filter_courts(allowed_courts)
+    css class: not-required-if-disabled
 ---
 template: claims_greater_than_7000
 subject:  |
@@ -846,14 +904,17 @@ fields:
     datatype: yesno
     js show if: |
       val("other_parties[i].is_current_military") === "None"
-  - "How do you know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
+  - "If yes, how do you know?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
-    hide if: still_unsure
+    show if:
+      variable: other_parties[i].is_current_military
+      is: True
   - "Why is it that you don't know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
-    show if: still_unsure
+    js show if: | 
+      val("still_unsure") == true && val("other_parties[i].is_current_military") === "None"
   - note: |
       The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
     show if: still_unsure
