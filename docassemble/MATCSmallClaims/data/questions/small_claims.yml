@@ -81,7 +81,7 @@ sections:
   - court_selection: Court selection
   - plaintiff_s_claim: Your claim
   - mediation: Mediation
-  - wants_fee_waiver: Fee Waiver
+  - wants_fee_waiver: Fee waiver
   - review_small_claims: Review your answers
 ---
 #################### Interview order #####################
