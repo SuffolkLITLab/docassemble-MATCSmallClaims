@@ -164,6 +164,7 @@ code: |
 ---
 features:
   progress bar: True
+  bootstrap theme: bootstrap.min.css
   css: styles.css
 ---
 id: basic questions intro screen
