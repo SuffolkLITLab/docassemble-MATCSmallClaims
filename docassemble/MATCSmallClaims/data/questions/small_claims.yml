@@ -27,6 +27,8 @@ metadata:
     - Nava Ebadollahi
     - Mark Marotta
     - Nicole Dimitri
+    - Sam Glover
+    - Ary Ascencio
   original_form: []
   original_form_published_on: 2024-06-05
   allowed_courts: 
@@ -76,8 +78,8 @@ objects:
         )
 ---
 sections:
-  - plaintiff_question: Plaintiff information
-  - defendant_question: Defendant information
+  - plaintiff_info: Plaintiff information
+  - defendant_info: Defendant information
   - court_selection: Court selection
   - plaintiff_s_claim: Your claim
   - mediation: Mediation
@@ -91,36 +93,36 @@ id: interview_order_small_claims
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
-
   small_claims_intro
-
+  
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
   if al_person_answering == "user":
     attorneys.there_are_any = False
+  
   users.gather()
   if users.number_gathered() > 0:
-    nav.set_section("plaintiff_question")
+    nav.set_section("plaintiff_info")
     users[0].address.address
     users[0].phone_number
   set_progress(28)
   set_parts(subtitle=str(users))
-    
+  
   attorneys.gather()
   if attorneys.number_gathered() > 0: 
     nav.set_section("attorney_question")
     attorneys[0].address.address
     attorneys[0].phone_number
   set_progress(42)
-
-  nav.set_section("defendant_question")
+  
+  nav.set_section("defendant_info")
   other_parties.gather()
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
   other_parties[0].is_current_military
-
+  
   nav.set_section("court_selection")
   set_parts(subtitle=str(users))
   set_progress(14)
@@ -251,17 +253,18 @@ subquestion: |
 
   Most people take about 30 minutes to complete this interview.
 ---
-id: who_is_filling_out_this_form
+id: is user represented
 question: | 
-  Who is filling out this form?
-  
+  Are you an attorney?
 fields:
-  - I am: al_person_answering
+  - no label: al_person_answering
     datatype: radio
     choices: 
-      - a self-represented plaintiff: user 
-      - an attorney filing on behalf of a plaintiff: attorney
-
+      - Yes: attorney
+      - No: user
+    label above field: True
+    under text: |
+      If you are an attorney but you are filing this claim on your own behalf, select No.
 ---
 id: attorney
 code: |
@@ -960,10 +963,15 @@ event: review_small_claims
 question: |
   Review your answers 
 review:
-  - Edit: who_is_filling_out_this_form
+  - Edit: al_person_answering
     button: |
-      **Who is filling out this form**:
-      ${ who_is_filling_out_this_form }
+      **Are you an attorney?**:
+
+      % if al_person_answering == "attorney":
+      Yes
+      % else:
+      No
+      % endif
   - Edit: municipal_court
     button: |
       **Municipal court**:
