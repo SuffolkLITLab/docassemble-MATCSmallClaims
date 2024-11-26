@@ -183,17 +183,9 @@ subquestion: |
   legal advice.
 
   A small claim is a legal process that is less complex than a traditional civil case. Your 
-  case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the Court,
-  not by a judge or jury. The Uniform Small Claims Rules govern small claims cases. The 
-  procedure for bringing a small claim action can be found in the [Mass. Gen. 
-  Laws, ch. 218, §§ 21-25](https://malegislature.gov/Laws/GeneralLaws/PartIII/TitleI/Chapter218/Section21).
-
-  
-  More information on the small claims process is available on the [Massachusetts self-help 
-  website](https://www.mass.gov/small-claims), where you can watch videos and read about 
-  the small claims process. The website has several useful resources, including information 
-  about the statutes of limitations, the Massachusetts General Laws, and the Massachusetts 
-  Rules of Court.
+  case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the court,
+  not by a judge or jury. More information and resources on the small claims process are 
+  available on the [Massachusetts self-help website](https://www.mass.gov/small-claims).
 
   Tap the {green words} in any screen for a definition or more information.
 
@@ -206,7 +198,7 @@ subquestion: |
   % endif
 
   If you are ready to begin the interview, please accept the **terms of use and privacy 
-  Policy**.
+  policy**.
   
   % if chat_partners_available().help:
   Live help is currently available in this interview. Click the speech bubble
@@ -232,41 +224,30 @@ continue button field: small_claims_intro
 question: |
   Information for the small claims complaint process
 subquestion: |
-  This interview will help you file a small claims complaint. In order to complete the 
-  interview you will need to know:
+  In order to complete this interview you will need to provide:
   
   1. The full name, address, and phone number or email address of anyone you intend to sue
   2. A summary or reason why you are suing them
   3. The military status of anyone you intend to sue (information about verifying military status will be provided)
   
-  When you are finished, you can either:
-
-  * File your claim electronically, or
-  * Download and print your claim forms so you can deliver them to the courthouse yourself
+  When you are finished, you will be able to file your claim electronically, or download 
+  and print your claim forms so you can deliver them to the courthouse yourself.
   
-  You will also need to pay the filing fee. 
+  You will also need to pay a filing fee. 
 
   Amount of your claim | Filing fee 
   ---------------------|-----------
   $500 or less         | $40
   $501–2,000           | $50
   $2,001–5,000         | $100 
-  $5,001–7,000         | $150
-  More than $7,000     | $150   
+  $5,001 or more       | $150
   
   If you cannot afford to pay the filing fee you can ask the court for a waiver. You can 
   complete a fee-waiver form during this interview.
   
   Please note that this interview cannot tell you what you should say to meet the legal 
   basis needed for a judge to rule in your favor. The court can provide information about 
-  how to file a claim, but cannot give legal advice.
-  
-  There is a time limit on filing any claim in court. This is known as the statute of 
-  limitations. While there may be exceptions, generally:
-
-  * A claim based on a contract must be filed in court within 6 years
-  * A claim based on a consumer protection law must be filed in court within 4 years
-  * A claim resulting from negligence or intentional harm must be filed in court within 3 years.
+  how to file a claim, but it cannot give legal advice.
 
   Most people take about 30 minutes to complete this interview.
 ---
