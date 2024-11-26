@@ -2348,6 +2348,12 @@ textarea.form-control-lg {
   appearance: none;
   print-color-adjust: exact;
 }
+/* Needed to override bundle.css on the LIT Lab dev server. */
+.dabody input.labelauty+label {
+  border-radius: var(--bs-border-radius);
+  -webkit-border-radius: var(--bs-border-radius);
+}
+
 .form-check-input[type=checkbox] {
   border-radius: 0.25em;
 }

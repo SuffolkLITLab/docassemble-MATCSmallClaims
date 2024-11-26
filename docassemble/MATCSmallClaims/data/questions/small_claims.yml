@@ -874,9 +874,7 @@ fields:
   - note: |
       1. If you know the defendant’s Social Security number or birth date, you can check online if they are on active military duty using the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website).
       
-      
       2. If you don't use the SCRA Website, provide details supporting your claim about the defendant's military status. You can include facts from your contacts or communications with the defendant. You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status.
-      
       
       In either case, tell us about your search results or correspondences.
     js show if: |
