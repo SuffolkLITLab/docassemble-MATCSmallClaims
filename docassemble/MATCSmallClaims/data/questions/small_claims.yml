@@ -340,7 +340,7 @@ sets:
 id: plaintiff's name
 question: |
   % if i == 0 and al_person_answering == "user":
-  What is your name?
+    What is your name?
   % else:
     % if al_person_answering == "attorney":
     What is the ${ ordinal(i) } plaintiff's name?
@@ -354,7 +354,11 @@ fields:
 ---
 id: plaintiff's address
 question: |
-  What is ${ users[i] }'s address?
+  % if i == 0 and al_person_answering == "user":
+    What is your address?
+  % else:
+    What is ${ users[i] }'s address?
+  % endif
 fields:
   - label: |
       % if i > 0 and al_person_answering == "user":
@@ -390,27 +394,16 @@ template: why_contact_info_needed_template
 subject: |
   Why do I need to give my contact information?
 content: | 
-  % if al_form_type in ['starts_case','existing_case','appeal']:
-  The court **must** be able to reach you. So you have to give them some way to do this.
-  
-  Some forms allow you to tell the court you need to keep your address, phone,
-  and email confidential, so that only court staff can see this information. 
-  % else:
   It is important that the person or organization you deliver this form to
   is able to contact you. Make sure to include at least one way to reach you
   other than mail.
-  % endif
 ---
-id: plaintiff's additional contact information
+id: additional plaintiffs contact information
 question: |
   What is ${ users[i] }'s contact information?
 subquestion: |
-  % if i == 0 and al_person_answering == "user":
-  Include at least **one** way to reach you other than by mail.
-  % else:
   Include at least **one** way to reach ${ users[i] } other than by mail.
-  % endif
-
+  
   ${ collapse_template(why_contact_info_needed_template) }
 fields:  
   - Phone number: users[i].phone_number
@@ -730,7 +723,7 @@ fields:
       variable: other_parties[i].person_type
       is: business
 ---
-id: persons contact information
+id: opposing parties contact information
 question: |
   What is ${other_parties[i]}'s contact information?
 fields:
@@ -837,60 +830,51 @@ review:
   - Edit: al_person_answering
     button: |
       **Are you an attorney?**:
-
       % if al_person_answering == "attorney":
       Yes
       % else:
       No
       % endif
-  - Edit: municipal_court
-    button: |
-      **Municipal court**:
-      ${ municipal_court }
-  - Edit: district
-    button: |
-      **District**:
-      ${ district }
-  - Edit: housing
-    button: |
-      **Housing**:
-      ${ housing }
-  - Edit: court_division
-    button: |
-      **Court division**:
-      ${ court_division }
   - Edit: users.revisit
     button: |
-      **Users**
-
+      **${ noun_plural("Plaintiff", users.number_gathered()) }**
+      
       % for item in users:
-        * ${ item }
+      * ${ item }
       % endfor
   - Edit: attorneys.revisit
     button: |
-      **Attorneys**
-
+      % if attorneys.there_are_any:
+        % if users.number_gathered() == 1:
+        **Plaintiff's ${ noun_plural("attorney", attorneys.number_gathered()) }**
+        % else:
+        **Plaintiffs' ${ noun_plural("attorney", attorneys.number_gathered()) }**
+        % endif
+      % else:
+      **No attorneys**
+      % endif
+      
       % for item in attorneys:
-        * ${ item }
+      * ${ item }
       % endfor
   - Edit: defendants.revisit
     button: |
-      **Defendants**
+      **${ noun_plural("Defendant", users.number_gathered()) }**
 
       % for item in defendants:
-        * ${ item }
+      * ${ item }
       % endfor
+  - Edit: trial_court
+    button: |
+      **Court:**
+      ${ trial_court }
   - Edit: defendant_owes_amount
     button: |
-      **Defendant owes amount**:
+      **Amount of claim:** 
       ${ currency(defendant_owes_amount) }
-  - Edit: filing_fee
-    button: |
-      **Defendant court costs amount**:
-      ${ currency(filing_fee) }
   - Edit: reason_for_suing_defendant
     button: |
-      **Reason for suing defendant**:
+      **Statement of claim:**
       > ${ single_paragraph(reason_for_suing_defendant) }
   - Edit: exhibit_attachment.exhibits.has_exhibits
     button: |
@@ -915,76 +899,28 @@ review:
     show if: exhibit_attachment.exhibits.has_exhibits
   - Edit: is_willing_mediation
     button: |
-      **Is willing mediation**:
-      ${ is_willing_mediation }
-  - Edit: not_current_military_defendant
-    button: |
-      **Not current military defendant**:
-      ${ not_current_military_defendant }
-  - Edit: not_current_military
-    button: |
-      **Not current military**:
-      ${ not_current_military }
-  - Edit: current_military_defendant
-    button: |
-      **Current military defendant**:
-      ${ current_military_defendant }
-  - Edit: unknown_current_military
-    button: |
-      **Unknown current military**:
-      ${ unknown_current_military }
-  - Edit: is_current_military
-    button: |
-      **Is current military**:
-      ${ is_current_military }
-  - Edit: other_parties[i].military_affidavit_facts
-    button: |
-      **Required facts in support of military affidavit**:
-      > ${ single_paragraph(other_parties[i].military_affidavit_facts) }
+      **Willing to mediate?** 
+      % if is_willing_mediation == True:
+      Yes
+      % else:
+      No
+      % endif
   - Edit: ask_affidavit_questions
     button: |
-      **Affidavit of Indigency**:
+      **Affidavit of indigency:**
       ${ ask_affidavit_questions }
   - Edit: user_signature
     button: |
-      **Signature**:
+      **Signature:**
       ${ users[0].signature }
   - Edit: signature_date
     button: |
-      **Date of signature**:
+      **Date of signature:**
       ${ signature_date }
----
-continue button field: attorneys.revisit
-question: |
-  Edit attorneys
-subquestion: |
-  ${ attorneys.table }
-
-  ${ attorneys.add_action() }
----
-table: attorneys.table
-rows: attorneys
-columns:
-  - Name: |
-      row_item.name.full() if defined("row_item.name.first") else ""
-  - Address: |
-      row_item.address.block() if defined("row_item.address.address") else ""
-  - Phone number: |
-      row_item.phone_number if defined("row_item.phone_number") else ""
-  - Zip code: | 
-      row_item.zip_code if defined ( "attorneys[i].address.zip" ) else""
-  - BBO number: | 
-      row_item.bbo_number if defined ( "attorneys[i].bbo_number" ) else""
-edit:
-  - name.first
-  - address.address
-  - phone_number
-  - Zip_code
-confirm: True
 ---
 continue button field: users.revisit
 question: |
-  Edit users
+  Edit plaintiffs
 subquestion: |
   ${ users.table }
 
@@ -1006,6 +942,34 @@ edit:
   - address.address
   - phone_number
   - signature
+confirm: True
+---
+continue button field: attorneys.revisit
+question: |
+  Edit attorneys
+subquestion: |
+  ${ attorneys.table }
+
+  ${ attorneys.add_action() }
+---
+table: attorneys.table
+rows: attorneys
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+  - Zip code: | 
+      row_item.address.zip if defined ( "attorneys[i].address.zip" ) else""
+  - BBO number: | 
+      row_item.bbo_number if defined ( "attorneys[i].bbo_number" ) else""
+edit:
+  - name.first
+  - address.address
+  - phone_number
+  - address.zip
 confirm: True
 ---
 continue button field: defendants.revisit
