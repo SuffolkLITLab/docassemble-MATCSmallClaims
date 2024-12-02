@@ -1,3 +1,4 @@
-.not-required-if-disabled-container:has(.form-select:disabled) .dawidecol::before {
+.not-required-if-disabled-container:has(.form-select:disabled) .dawidecol::before,
+.darequired:has(.form-control, .form-select:disabled) .da-form-label::after {
   display: none;
 }

@@ -27,6 +27,8 @@ metadata:
     - Nava Ebadollahi
     - Mark Marotta
     - Nicole Dimitri
+    - Sam Glover
+    - Ary Ascencio
   original_form: []
   original_form_published_on: 2024-06-05
   allowed_courts: 
@@ -64,8 +66,8 @@ code: |
 ---
 objects:
   - al_logo: DAStaticFile.using(filename="Mass-Trial-Court-Seal-final-color.png")
-  - users: ALPeopleList.using(complete_attribute= ['name.first', 'address.address', 'phone_number'])
-  - attorneys: ALPeopleList.using(complete_attribute="participation")
+  - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'phone_number'])
+  - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
   - exhibit_attachment: ALExhibitDocument.using(
           title="Exhibits",
@@ -76,12 +78,12 @@ objects:
         )
 ---
 sections:
-  - plaintiff_question: Plaintiff information
-  - defendant_question: Defendant information
+  - plaintiff_info: Plaintiff information
+  - defendant_info: Defendant information
   - court_selection: Court selection
-  - plaintiff_s_claim: Your claim
+  - claim_details: Your claim
   - mediation: Mediation
-  - wants_fee_waiver: Fee Waiver
+  - wants_fee_waiver: Fee waiver
   - review_small_claims: Review your answers
 ---
 #################### Interview order #####################
@@ -91,43 +93,43 @@ id: interview_order_small_claims
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
-
   small_claims_intro
-
+  
+  nav.set_section("plaintiff_info")
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
   if al_person_answering == "user":
     attorneys.there_are_any = False
-  users.gather()
-  if users.number_gathered() > 0:
-    nav.set_section("plaintiff_question")
-    users[0].address.address
-    users[0].phone_number
-  set_progress(28)
-  set_parts(subtitle=str(users))
-    
+  
   attorneys.gather()
   if attorneys.number_gathered() > 0: 
-    nav.set_section("attorney_question")
+    attorneys[0].bbo_number
     attorneys[0].address.address
     attorneys[0].phone_number
-  set_progress(42)
+  set_progress(14)
 
-  nav.set_section("defendant_question")
+  users.gather()
+  if users.number_gathered() > 0:
+    users[0].address.address
+    users[0].phone_number
+  set_parts(subtitle=str(users))
+  set_progress(28)
+  
+  nav.set_section("defendant_info")
   other_parties.gather()
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
   other_parties[0].is_current_military
-
+  
   nav.set_section("court_selection")
   set_parts(subtitle=str(users))
-  set_progress(14)
+  set_progress(42)
   # docket_number
   trial_court.department
   
-  nav.set_section("plaintiff_s_claim")
+  nav.set_section("claim_details")
   defendant_owes_amount
   filing_fee
   reason_for_suing_defendant
@@ -183,17 +185,9 @@ subquestion: |
   legal advice.
 
   A small claim is a legal process that is less complex than a traditional civil case. Your 
-  case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the Court,
-  not by a judge or jury. The Uniform Small Claims Rules govern small claims cases. The 
-  procedure for bringing a small claim action can be found in the [Mass. Gen. 
-  Laws, ch. 218, §§ 21-25](https://malegislature.gov/Laws/GeneralLaws/PartIII/TitleI/Chapter218/Section21).
-
-  
-  More information on the small claims process is available on the [Massachusetts self-help 
-  website](https://www.mass.gov/small-claims), where you can watch videos and read about 
-  the small claims process. The website has several useful resources, including information 
-  about the statutes of limitations, the Massachusetts General Laws, and the Massachusetts 
-  Rules of Court.
+  case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the court,
+  not by a judge or jury. More information and resources on the small claims process are 
+  available on the [Massachusetts self-help website](https://www.mass.gov/small-claims).
 
   Tap the {green words} in any screen for a definition or more information.
 
@@ -206,7 +200,7 @@ subquestion: |
   % endif
 
   If you are ready to begin the interview, please accept the **terms of use and privacy 
-  Policy**.
+  policy**.
   
   % if chat_partners_available().help:
   Live help is currently available in this interview. Click the speech bubble
@@ -232,87 +226,110 @@ continue button field: small_claims_intro
 question: |
   Information for the small claims complaint process
 subquestion: |
-  This interview will help you file a small claims complaint. In order to complete the 
-  interview you will need to know:
+  In order to complete this interview you will need to provide:
   
   1. The full name, address, and phone number or email address of anyone you intend to sue
   2. A summary or reason why you are suing them
   3. The military status of anyone you intend to sue (information about verifying military status will be provided)
   
-  When you are finished, you can either:
-
-  * File your claim electronically, or
-  * Download and print your claim forms so you can deliver them to the courthouse yourself
+  When you are finished, you will be able to file your claim electronically, or download 
+  and print your claim forms so you can deliver them to the courthouse yourself.
   
-  You will also need to pay the filing fee. 
+  You will also need to pay a filing fee. 
 
   Amount of your claim | Filing fee 
   ---------------------|-----------
   $500 or less         | $40
   $501–2,000           | $50
   $2,001–5,000         | $100 
-  $5,001–7,000         | $150
-  More than $7,000     | $150   
+  $5,001 or more       | $150
   
   If you cannot afford to pay the filing fee you can ask the court for a waiver. You can 
   complete a fee-waiver form during this interview.
   
   Please note that this interview cannot tell you what you should say to meet the legal 
   basis needed for a judge to rule in your favor. The court can provide information about 
-  how to file a claim, but cannot give legal advice.
-  
-  There is a time limit on filing any claim in court. This is known as the statute of 
-  limitations. While there may be exceptions, generally:
-
-  * A claim based on a contract must be filed in court within 6 years
-  * A claim based on a consumer protection law must be filed in court within 4 years
-  * A claim resulting from negligence or intentional harm must be filed in court within 3 years.
+  how to file a claim, but it cannot give legal advice.
 
   Most people take about 30 minutes to complete this interview.
 ---
-id: who_is_filling_out_this_form
+id: is user an attorney
 question: | 
-  Who is filling out this form?
-  
+  Are you an attorney?
 fields:
-  - I am: al_person_answering
+  - no label: al_person_answering
     datatype: radio
     choices: 
-      - a self-represented plaintiff: user 
-      - an attorney filing on behalf of a plaintiff: attorney
-
+      - Yes: attorney
+      - No: user
+    label above field: True
+    under text: |
+      If you are an attorney but you are filing this claim on your own behalf, select No.
 ---
-id: attorney
-code: |
-  attorneys[0].name.first
-  attorneys[0].address.address
-  attorneys[0].phone_number
-  attorneys[0].email_address
-  attorneys[0].participation = True 
----
+id: attorney information
 sets:
-  - users[0].name.first
-  - users[0].name.last
-  - users[0].name.middle
-  - users[0].name.suffix  
-  - users[0].name.business
-id: users names
+  - attorneys[i].name.first
+  - attorneys[i].name.last
+  - attorneys[i].name.middle
+  - attorneys[i].name.suffix
+generic object: ALPeopleList
 question: |
-  % if al_person_answering == "user":
+  % if i == 0:
   What is your name?
   % else:
-  % if al_person_answering == "attorney":
-  Name of the first plaintiff
-  % else:
-  What is the name of the ${ ordinal_number(0) } person who is adding their name to
-  this form with you?
+  Name of the first ${ noun_plural(attorneys.object_name(), 1) }
   % endif
-  % endif
-subquestion:  |
-  Include your full name after your business if you are filing as a business. 
 fields:
   - code: |
-      users[0].name_fields(person_or_business="unsure")     
+      attorneys[i].name_fields()
+  - "BBO number": attorneys[i].bbo_number
+    maxlength: 6
+    required: True
+    under text: |
+      [Click here](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
+---
+sets:
+  - attorneys[i].address.address
+  - attorneys[i].address.city
+  - attorneys[i].address.zip
+  - attorneys[i].address.unit
+  - attorneys[i].address.state
+  - attorneys[i].address.country
+id: attorney's address
+generic object: ALIndividual
+question: |
+  % if i == 0 and al_person_answering == "attorney":
+  What is your address?
+  % else:
+  What is ${ attorneys[i].name }'s address?
+  % endif
+fields:
+  - code: |
+      attorneys[i].address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
+---
+id: attorney's additional contact information
+generic object: ALIndividual
+question: |
+  % if i == 0 and al_person_answering == "attorney":
+  What is your contact information?
+  % else:
+  What is ${ attorneys[i].name }'s contact information?
+  % endif
+fields:
+  - Phone: attorneys[i].phone_number
+    required: True
+  - Email: attorneys[i].email_address
+    required: False
+---
+generic object: ALPeopleList
+id: additional attorneys 
+question: |
+  Are there any other attorneys representing the plaintiff?
+subquestion: |
+  It is not common to have more than one attorney on a small claim, but you can add more. 
+fields:
+  - no label: attorneys.there_is_another
+    datatype: yesnoradio
 ---
 sets:
   - users[i].name.first
@@ -320,33 +337,28 @@ sets:
   - users[i].name.middle
   - users[i].name.suffix  
   - users[i].name.business
-id: users names
+id: plaintiff's name
 question: |
-  % if al_person_answering == "user":
-  What is their name?
+  % if i == 0 and al_person_answering == "user":
+    What is your name?
   % else:
-  % if al_person_answering == "attorney":
-  What is ${ ordinal(i) } plaintiffs name?
-  % else:
-  What is the name of the ${ ordinal_number(i) } person who is adding their name to
-  this form with you?
+    % if al_person_answering == "attorney":
+    What is the ${ ordinal(i) } plaintiff's name?
+    % else:
+    What is the name of the ${ ordinal_number(i) } plaintiff?
+    % endif
   % endif
-  % endif
-subquestion:  |
-  Include your full name after your business if you are filing as a business. 
 fields:
   - code: |
       users[i].name_fields(person_or_business="unsure")      
 ---
-id: user i's address
+id: plaintiff's address
 question: |
-  % if i == 1 and al_person_answering == "user":
-  What is ${ ordinal_number(i) } address?
-  % elif i == 0 and al_person_answering == "user":
-  What is ${ users[i] }'s address?
+  % if i == 0 and al_person_answering == "user":
+    What is your address?
   % else:
-  What is ${ users[i] }'s address?
-  % endif  
+    What is ${ users[i] }'s address?
+  % endif
 fields:
   - label: |
       % if i > 0 and al_person_answering == "user":
@@ -382,51 +394,16 @@ template: why_contact_info_needed_template
 subject: |
   Why do I need to give my contact information?
 content: | 
-  % if al_form_type in ['starts_case','existing_case','appeal']:
-  The court **must** be able to reach you. So you have to give them some way to do this.
-  
-  Some forms allow you to tell the court you need to keep your address, phone,
-  and email confidential, so that only court staff can see this information. 
-  % else:
   It is important that the person or organization you deliver this form to
   is able to contact you. Make sure to include at least one way to reach you
   other than mail.
-  % endif
 ---
-id: first plaintiff contact
-question: |
-  What is ${ users[0] }'s contact information?
-subquestion: |
-  Include at least **one** way to reach you other than by mail.
-
-  ${ collapse_template(why_contact_info_needed_template) }
-fields:  
-  - Phone number: users[0].phone_number
-    required: False
-  - Email address: users[0].email    
-    datatype: email
-    required: False
-  - Other ways to reach you: users[0].other_contact_method
-    input type: area
-    required: False
-    help: |
-      If you do not have a phone number or email, provide
-      specific contact instructions. For example, use a friend's phone number.
-      But the friend must be someone you can rely on to give you a
-      message.
-validation code: |
-  if (not showifdef('users[0].phone_number') and \
-      (not showifdef('users[0].mobile_number')) and \
-      (not showifdef('users[0].email')) and \
-      (not showifdef('users[0].other_contact_method'))):
-    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
----
-id: your contact information
+id: additional plaintiffs contact information
 question: |
   What is ${ users[i] }'s contact information?
 subquestion: |
-  Include at least **one** way to reach you other than by mail.
-
+  Include at least **one** way to reach ${ users[i] } other than by mail.
+  
   ${ collapse_template(why_contact_info_needed_template) }
 fields:  
   - Phone number: users[i].phone_number
@@ -449,16 +426,6 @@ validation code: |
       (not showifdef('users[i].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."), field="users[i].other_contact_method")
 ---
-generic object: ALPeopleList
-id: additional people 
-question: |
-  Do you have any other ${ noun_plural(x.object_name()) } to tell us about?
-subquestion: |
-  It is uncommon to have more than one attorney, but you can do so with this form. 
-fields:
-  - no label: x.there_is_another
-    datatype: yesnoradio
----
 id: any other opposing parties
 question: |
   % if user_started_case:
@@ -470,7 +437,7 @@ fields:
   - no label: other_parties.there_is_another
     datatype: yesnoradio
 ---
-id: any other users
+id: any other plaintiffs
 question: |
   % if al_person_answering == "attorney":
   Are there additional plaintiffs?
@@ -484,46 +451,6 @@ subquestion: |
 fields:
   - no label: users.there_is_another
     datatype: yesnoradio
----
-id: user i's address
-question: |
-  % if i > 0 and al_person_answering == "user":
-  What is their address?
-  % elif i == 0 and al_person_answering == "user":
-  What is ${ users[i] }'s address?
-  % else:
-  What is ${ users[i] }'s address?
-  % endif  
-fields:
-  - label: |
-      % if i > 0 and al_person_answering == "user":
-      Same as your address
-      % else:
-      Same as ${ users[0] }'s address
-      % endif
-    field: users[i].address
-    datatype: object_radio
-    choices:
-      - users[0].address if defined("users[0].address.address") else None
-    object labeler: |
-      lambda y: y.on_one_line()      
-    none of the above: |
-      Somewhere else
-    disable others: True
-    show if:
-      code: |
-        i > 0 and defined("users[0].address.address")
-  - ${ users[i].address.address_label}: users[i].address.address
-    address autocomplete: True
-  - ${ users[i].address.unit_label}: users[i].address.unit
-    required: False
-  - ${ users[i].address.city_label}: users[i].address.city
-  - ${ users[i].address.state_label}: users[i].address.state
-    code: |
-      states_list(country_code=AL_DEFAULT_COUNTRY)
-    default: ${ AL_DEFAULT_STATE }
-  - ${ users[i].address.zip_label}: users[i].address.zip
-    required: False
 ---
 if: |
   len(all_matches) and all_courts.filter_courts(allowed_courts) 
@@ -593,7 +520,7 @@ fields:
   - Amount defendant owes you: defendant_owes_amount
     datatype: currency
     min: 0
-  - "Your claim is for more than $7,000": reason_claim_exceeds_7000
+  - "Your claim is for more than $7,000": reason_pexceeds_7000
     datatype: radio
     choices:
       - My claim is based on property damage from an auto accident
@@ -632,11 +559,6 @@ script: |
       },
       {
         min: 5001,
-        max: 7000,
-        fee: 150,
-      },
-      {
-        min: 7001,
         max: "none",
         fee: 150,
       }
@@ -728,49 +650,6 @@ subquestion: |
 
   You may bring a small claim in a Housing Court where:
   - the rental property is located (if you are filing a claim about a landlord-tenant issue).
-
----
- id: who will be on this form
- generic object: ALPeopleList
- question: |
-  Will this form include any ${noun_plural(x.object_name())}?
- subquestion: | 
-  You do not need an attorney to go to court on a small claims case, but you may hire one if you wish. 
-  
-  The court will not provide an attorney for you. 
-  
-  If you want to find an attorney, you can use the [Massachusetts Legal Resource Finder](https://masslrf.org/en/home) or your local bar association's lawyer referral service.
-
- fields:
-  - no label: x.there_are_any
-    datatype: yesnoradio
----
-id: name of the first person
-sets:
-  - x[0].name.first
-  - x[0].name.last
-  - x[0].name.middle
-  - x[0].name.suffix
-  - x[0].name.address.zip
-generic object: ALPeopleList
-question: |
-  % if hasattr(x, 'ask_number') and x.ask_number and x.target_number == 1:
-  Name of ${ noun_plural(x.object_name(),1) }
-  % else:
-  % if al_person_answering == "attorney":
-  What is your name?
-  % else:
-  Name of your first ${ noun_plural(x.object_name(),1) }
-  % endif
-  % endif
-subquestion: |
-  [Click here](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
-fields:
-  - code: |
-      x[0].name_fields()
-  - "BBO number": bbo_number
-    maxlength: 6
-    required: True
 ---
 sets:
   - other_parties[i].name.first
@@ -843,39 +722,8 @@ fields:
     show if: 
       variable: other_parties[i].person_type
       is: business
-
-
 ---
-sets:
-  - attorneys[i].address.address
-  - attorneys[i].address.city
-  - attorneys[i].address.zip
-  - attorneys[i].address.unit
-  - attorneys[i].address.state
-  - attorneys[i].address.country
-id: navas persons address
-generic object: ALIndividual
-question: |
-  % if i == 0 and al_person_answering == "attorney":
-  What is your address?
-  % else:
-  What is the address of ${ attorneys[i].name }?
-  % endif
-fields:
-  - code: |
-      attorneys[i].address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
----
-id: persons contact information
-generic object: ALIndividual
-question: |
-  What is your contact information?
-fields:
-  - Phone: x.phone_number
-    required: True
-  - Email: x.email_address
-    required: False
----
-id: persons contact information
+id: opposing parties contact information
 question: |
   What is ${other_parties[i]}'s contact information?
 fields:
@@ -893,9 +741,7 @@ fields:
   - note: |
       1. If you know the defendant’s Social Security number or birth date, you can check online if they are on active military duty using the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website).
       
-      
       2. If you don't use the SCRA Website, provide details supporting your claim about the defendant's military status. You can include facts from your contacts or communications with the defendant. You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status.
-      
       
       In either case, tell us about your search results or correspondences.
     js show if: |
@@ -981,62 +827,54 @@ event: review_small_claims
 question: |
   Review your answers 
 review:
-  - Edit: who_is_filling_out_this_form
+  - Edit: al_person_answering
     button: |
-      **Who is filling out this form**:
-      ${ who_is_filling_out_this_form }
-  - Edit: municipal_court
-    button: |
-      **Municipal court**:
-      ${ municipal_court }
-  - Edit: district
-    button: |
-      **District**:
-      ${ district }
-  - Edit: housing
-    button: |
-      **Housing**:
-      ${ housing }
-  - Edit: court_division
-    button: |
-      **Court division**:
-      ${ court_division }
+      **Are you an attorney?**:
+      % if al_person_answering == "attorney":
+      Yes
+      % else:
+      No
+      % endif
   - Edit: users.revisit
     button: |
-      **Users**
-
+      **${ noun_plural("Plaintiff", users.number_gathered()) }**
+      
       % for item in users:
-        * ${ item }
+      * ${ item }
       % endfor
   - Edit: attorneys.revisit
     button: |
-      **Attorneys**
-
+      % if attorneys.there_are_any:
+        % if users.number_gathered() == 1:
+        **Plaintiff's ${ noun_plural("attorney", attorneys.number_gathered()) }**
+        % else:
+        **Plaintiffs' ${ noun_plural("attorney", attorneys.number_gathered()) }**
+        % endif
+      % else:
+      **No attorneys**
+      % endif
+      
       % for item in attorneys:
-        * ${ item }
+      * ${ item }
       % endfor
-  - Edit: bbo_number
-    button: |
-      **Bbo number**:
-      ${ bbo_number }
   - Edit: defendants.revisit
     button: |
-      **Defendants**
+      **${ noun_plural("Defendant", users.number_gathered()) }**
 
       % for item in defendants:
-        * ${ item }
+      * ${ item }
       % endfor
+  - Edit: trial_court
+    button: |
+      **Court:**
+      ${ trial_court }
   - Edit: defendant_owes_amount
     button: |
-      **Defendant owes amount**:
+      **Amount of claim:** 
       ${ currency(defendant_owes_amount) }
-  - Edit: filing_fee
-    button: |
-      **Defendant court costs amount**:
-      ${ currency(filing_fee) }
   - Edit: reason_for_suing_defendant
     button: |
-      **Reason for suing defendant**:
+      **Statement of claim:**
       > ${ single_paragraph(reason_for_suing_defendant) }
   - Edit: exhibit_attachment.exhibits.has_exhibits
     button: |
@@ -1061,74 +899,28 @@ review:
     show if: exhibit_attachment.exhibits.has_exhibits
   - Edit: is_willing_mediation
     button: |
-      **Is willing mediation**:
-      ${ is_willing_mediation }
-  - Edit: not_current_military_defendant
-    button: |
-      **Not current military defendant**:
-      ${ not_current_military_defendant }
-  - Edit: not_current_military
-    button: |
-      **Not current military**:
-      ${ not_current_military }
-  - Edit: current_military_defendant
-    button: |
-      **Current military defendant**:
-      ${ current_military_defendant }
-  - Edit: unknown_current_military
-    button: |
-      **Unknown current military**:
-      ${ unknown_current_military }
-  - Edit: is_current_military
-    button: |
-      **Is current military**:
-      ${ is_current_military }
-  - Edit: other_parties[i].military_affidavit_facts
-    button: |
-      **Required facts in support of military affidavit**:
-      > ${ single_paragraph(other_parties[i].military_affidavit_facts) }
+      **Willing to mediate?** 
+      % if is_willing_mediation == True:
+      Yes
+      % else:
+      No
+      % endif
   - Edit: ask_affidavit_questions
     button: |
-      **Affidavit of Indigency**:
+      **Affidavit of indigency:**
       ${ ask_affidavit_questions }
   - Edit: user_signature
     button: |
-      **Signature**:
+      **Signature:**
       ${ users[0].signature }
   - Edit: signature_date
     button: |
-      **Date of signature**:
+      **Date of signature:**
       ${ signature_date }
----
-continue button field: attorneys.revisit
-question: |
-  Edit attorneys
-subquestion: |
-  ${ attorneys.table }
-
-  ${ attorneys.add_action() }
----
-table: attorneys.table
-rows: attorneys
-columns:
-  - Name: |
-      row_item.name.full() if defined("row_item.name.first") else ""
-  - Address: |
-      row_item.address.block() if defined("row_item.address.address") else ""
-  - Phone number: |
-      row_item.phone_number if defined("row_item.phone_number") else ""
-  - Zip Code: | 
-      row_item.zip_code if defined ( "users[0].address.zip" ) else""
-edit:
-  - name.first
-  - address.address
-  - phone_number
-  - Zip_code
-confirm: True
 ---
 continue button field: users.revisit
 question: |
-  Edit users
+  Edit plaintiffs
 subquestion: |
   ${ users.table }
 
@@ -1150,6 +942,34 @@ edit:
   - address.address
   - phone_number
   - signature
+confirm: True
+---
+continue button field: attorneys.revisit
+question: |
+  Edit attorneys
+subquestion: |
+  ${ attorneys.table }
+
+  ${ attorneys.add_action() }
+---
+table: attorneys.table
+rows: attorneys
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+  - Zip code: | 
+      row_item.address.zip if defined ( "attorneys[i].address.zip" ) else""
+  - BBO number: | 
+      row_item.bbo_number if defined ( "attorneys[i].bbo_number" ) else""
+edit:
+  - name.first
+  - address.address
+  - phone_number
+  - address.zip
 confirm: True
 ---
 continue button field: defendants.revisit
