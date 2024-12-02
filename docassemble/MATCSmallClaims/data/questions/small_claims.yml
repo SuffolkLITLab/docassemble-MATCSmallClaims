@@ -578,7 +578,9 @@ script: |
         }
       });
     }
-  
+    if ($(getField("defendant_owes_amount")).val()) {
+      getFilingFee();
+    }
     $(getField("defendant_owes_amount")).on("change", getFilingFee);
   </script>  
 ---
