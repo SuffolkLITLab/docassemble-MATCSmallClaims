@@ -56,7 +56,7 @@ code: |
   AL_DEFAULT_STATE = "MA"
 ---
 code: |
-  github_repo_name =  'docassemble-SmallClaims'
+  github_repo_name =  'docassemble-MATCSmallClaims'
 ---
 code: |
   interview_short_title = "File for small claims"
