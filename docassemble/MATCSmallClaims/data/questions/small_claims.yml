@@ -1026,7 +1026,7 @@ progress: 100
 ---
 # ALDocument objects specify the metadata for each template
 objects:
-  - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps_nsd.docx", enabled=True, has_addendum=False)
+  - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
   - small_claims_attachment: ALDocument.using(title="Small claims", filename="small_claims", enabled=True, has_addendum=False, )
   - affidavit_of_indigency: ALDocument.using(filename=&quot;affidavit-of-indigency.pdf&quot;, title=&quot;Affidavit of Indigency&quot; enabled=True)
 ---
@@ -1040,8 +1040,8 @@ objects:
 # `i` to show or hide the user's signature
 attachment:
   name: Post-interview-Instructions
-  filename: small_claims_next_steps_nsd
-  docx template file: small_claims_next_steps_nsd.docx
+  filename: small_claims_next_steps
+  docx template file: small_claims_next_steps.docx
   variable name: small_claims_Post_interview_instructions[i]
   skip undefined: True
   tagged pdf: True
@@ -1069,7 +1069,7 @@ attachment:
       - "user_phone_number": ${ users[0].phone_number }
       - "user_name_business": ${ users[0].name_business }
       - "attorney_phone_number": ${ attorneys[0].phone_number }
-      - "bbo_number": ${ bbo_number }
+      - "bbo_number": ${ attorneys[0].bbo_number }
       - "defendant1_name": ${ defendants[0] }
       - "defendant2_name": ${ defendants[1] }
       - "defendant1_address_line_one": ${ defendants[0].address.line_one() }
