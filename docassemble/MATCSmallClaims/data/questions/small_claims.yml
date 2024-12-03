@@ -340,7 +340,7 @@ sets:
 id: plaintiff's name
 question: |
   % if i == 0 and al_person_answering == "user":
-    What is your name?
+  What is your name?
   % else:
     % if al_person_answering == "attorney":
     What is the ${ ordinal(i) } plaintiff's name?
@@ -355,9 +355,9 @@ fields:
 id: plaintiff's address
 question: |
   % if i == 0 and al_person_answering == "user":
-    What is your address?
+  What is your address?
   % else:
-    What is ${ users[i] }'s address?
+  What is ${ users[i] }'s address?
   % endif
 fields:
   - label: |
@@ -398,13 +398,47 @@ content: |
   is able to contact you. Make sure to include at least one way to reach you
   other than mail.
 ---
-id: additional plaintiffs contact information
+id: first plaintiff's contact information
+question: |
+  % if al_person_answering == "user":
+  What is your contact information??
+  % else:
+  What is ${ users[0] }'s contact information?
+  % endif
+subquestion: |
+  % if al_person_answering == "user":
+  Include at least **one** way to reach you other than by mail.
+  
+  ${ collapse_template(why_contact_info_needed_template) }
+  % else:
+  Include at least **one** way to reach ${ users[0] } other than by mail.
+  % endif
+fields:  
+  - Phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Other ways to reach you: users[0].other_contact_method
+    input type: area
+    required: False
+    help: |
+      If you do not have a phone number or email, provide
+      specific contact instructions. For example, use a friend's phone number.
+      But the friend must be someone you can rely on to give you a
+      message.
+validation code: |
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
+---
+id: additional plaintiff's contact information
 question: |
   What is ${ users[i] }'s contact information?
 subquestion: |
   Include at least **one** way to reach ${ users[i] } other than by mail.
-  
-  ${ collapse_template(why_contact_info_needed_template) }
 fields:  
   - Phone number: users[i].phone_number
     required: False
