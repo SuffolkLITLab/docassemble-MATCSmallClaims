@@ -4,6 +4,7 @@ include:
   - docassemble.ALAffidavitOfIndigency:affidavit_body.yml
   - docassemble.demo:data/questions/examples/cards.yml
   - docassemble.ALToolbox:collapse_template.yml
+  - docassemble.MATCTheme:matc_theme.yml
 ---
 metadata:
   title: >-
@@ -65,7 +66,6 @@ code: |
   al_form_type = "starts_case"  
 ---
 objects:
-  - al_logo: DAStaticFile.using(filename="docassemble.MATCTheme:Mass-Trial-Court-Seal-final-color.png")
   - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
   - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
@@ -173,7 +173,6 @@ code: |
 ---
 features:
   progress bar: True
-  bootstrap theme: docassemble.MATCTheme:bootstrap.css
   css: styles.css
 ---
 id: basic questions intro screen
