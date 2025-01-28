@@ -130,9 +130,9 @@ code: |
   trial_court.department
   
   nav.set_section("claim_details")
+  reason_for_suing_defendant
   defendant_owes_amount
   filing_fee
-  reason_for_suing_defendant
   if exhibit_attachment.exhibits.has_exhibits:
     exhibit_attachment.exhibits.gather()
   nav.set_section("mediation")
@@ -546,11 +546,30 @@ content:  |
   1. If your claim is based on property damage from an automobile accident, the amount of your claim can be more than $7,000.
   2. If you are suing for unfair and deceptive practices under [Mass. Gen. Laws ch. 93A](https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXV/Chapter93A) or under the security deposit statute, [Mass. Gen. Laws ch. 186, § 15B](https://malegislature.gov/Laws/GeneralLaws/PartII/TitleI/Chapter186/Section15B), the court may award additional damages above the $7,000 limit, but the base amount of your claim must be $7,000 or less.
 ---
+id: statement of claim
+question: Explain what happened in your case
+subquestion: |
+  Tell the court what happened and explain why you are suing the defendant as clearly as you can. 
+  Be sure to include:
+  
+  * The dates when the main events of your case took place, if you remember them
+  * The amount of money you are asking the court to award you
+  * How you determined the amount of money you are owed
+
+  If a law allows you to ask the court to award double or triple the amount of money that you are owed, then you should also explain how the defendant harmed you and why the court should award you more money damages for that harm.
+
+  You will be able to attach supporting documents on the next screen.
+fields:
+  - Reason for your claim: reason_for_suing_defendant
+    input type: area
+    rows: 10
+    label above field: True
+---
 id: claim amount
 question: |
-  Claim amount
+  How much money does the defendant owe you in this case?
 fields: 
-  - Amount defendant owes you: defendant_owes_amount
+  - Amount owed: defendant_owes_amount
     datatype: currency
     min: 0
   - "Your claim is for more than $7,000": reason_pexceeds_7000
@@ -616,26 +635,6 @@ script: |
     }
     $(getField("defendant_owes_amount")).on("change", getFilingFee);
   </script>  
----
-id: statement of claim
-question: Describe your claim
-subquestion: |
-  Clearly state your claim so the defendant can understand why you are suing them. Make 
-  sure to include:
-  
-  * The date(s) of the event that is the basis of your claim
-  * Your requests for relief
-  * A breakdown or calculation showing how you arrived at the amount of your claim
-
-  If a law allows you to seek double or triple the amount of your claim, then you must 
-  include this specific information in your statement of claim.
-
-  You will be able to attach supporting documents on the next screen.
-fields:
-  - Reason for your claim: reason_for_suing_defendant
-    input type: area
-    rows: 10
-    label above field: True
 ---
 template: mediation_learn_more
 subject:  |
@@ -903,14 +902,14 @@ review:
     button: |
       **Court:**
       ${ trial_court }
-  - Edit: defendant_owes_amount
-    button: |
-      **Amount of claim:** 
-      ${ currency(defendant_owes_amount) }
   - Edit: reason_for_suing_defendant
     button: |
       **Statement of claim:**
       > ${ single_paragraph(reason_for_suing_defendant) }
+  - Edit: defendant_owes_amount
+    button: |
+      **Amount of claim:** 
+      ${ currency(defendant_owes_amount) }
   - Edit: exhibit_attachment.exhibits.has_exhibits
     button: |
       **Exhibits attached?**
@@ -1111,9 +1110,9 @@ attachment:
       - "defendant1_address_line_two": ${ defendants[0].address.line_two() }
       - "defendant1_phone_number": ${ defendants[0].phone_number }
       - "defendant2_phone_number": ${ defendants[1].phone_number }
+      - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
       - "defendant_owes_amount": ${ currency(defendant_owes_amount) }
       - "defendant_court_costs_amount": ${ currency(filing_fee) }
-      - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
       - "signature_date": ${ signature_date }
       - "user_signature": ${ users[0].signature }
       - "is_willing_mediation_yes": ${ is_willing_mediation }
