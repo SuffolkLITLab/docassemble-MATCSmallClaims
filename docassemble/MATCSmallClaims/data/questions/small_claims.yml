@@ -636,29 +636,25 @@ script: |
     $(getField("defendant_owes_amount")).on("change", getFilingFee);
   </script>  
 ---
-template: mediation_learn_more
-subject:  |
-  Learn more about mediation
-content:  |
-  To learn more about mediation, click [here](https://www.mass.gov/info-details/about-mediation)
----
-id: Additional Information
+id: mediation_question
+mandatory: True
 question: |
-  Are you willing to attempt to settle this claim through mediation?
-subquestion: | 
-  ${ card_start("What is mediation?", color="info", icon="comment") }
-  Mediation is when all parties in a lawsuit sit down with a neutral person who helps them discuss the case and tries to negotiate a settlement or resolution.
-   
-  The Plaintiff must notify the court if they desire mediation. The defendant may consent to mediation on the trial date. You do not lose your right to a trial if you go to mediation and it is unsuccessful. 
-  
-  ${ card_end() }
-  ${ collapse_template(mediation_learn_more) } 
-  
-  
+  Do you want to try mediation to settle your small claim?
+subquestion: |  
+  Mediation is a way to settle your case **without going to court.**  
+
+  During mediation, the parties in a lawsuit sit down with a neutral person, called a mediator, to talk out a solution to their legal problem.  
+
+  <span style="border-bottom: 1px dotted green;" title="This link will take you to Mass.gov, an external website.">
+    <a href="https://www.mass.gov/info-details/about-mediation" target="_blank" style="color: green; text-decoration: none;">
+      Mediation can also be faster and less expensive than going to court.
+    </a>
+  </span>
+
 fields:
-  - "Are you willing to mediate?": is_willing_mediation
+  - "Would you like to try mediation?": is_willing_mediation
     datatype: yesnoradio
----    
+---
 id: Tell us about a court
 question: |
   % if al_form_type == 'starts_case':
