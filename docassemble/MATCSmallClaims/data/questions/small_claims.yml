@@ -762,9 +762,25 @@ fields:
   - Email: other_parties[i].email_address
     required: False
 ---
-id: Military Affidavit
+id: military_affidavit_question
+mandatory: True
 question: | 
+  % if other_parties.number() > 1:
   Is ${other_parties[i]} in the military?
+  % else:
+  Is the defendant in the military?
+  % endif
+subquestion: |  
+  - **Federal law,** including the Servicemembers Civil Relief Act (SCRA), provides protections to active-duty military members in legal cases.  
+  - If the defendant is in the military, the court may need to **pause the case** or take extra steps before issuing a judgment against them.  
+  - This ensures that service members are **not unfairly disadvantaged** while fulfilling their military duties.  
+
+  <span style="border-bottom: 1px dotted green;" title="This link from Mass.gov will open a PDF in a new window.">
+    <a href="https://www.mass.gov/doc/military-affidavit-instructions-for-self-represented-litigants/download" target="_blank" style="color: green; text-decoration: none;">
+      Learn more about filing a Military Affidavit with the court.
+    </a>
+  </span>
+
 fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
@@ -794,12 +810,6 @@ fields:
   - note: |
       The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
     show if: still_unsure
-comment: |
-  % if other_parties.number() > 1: 
-  other_parties.as_noun("party")   
-  https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
-  
-  #The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
 ---
 id: wants_fee_waiver
 question: |
