@@ -753,12 +753,14 @@ fields:
       variable: other_parties[i].person_type
       is: business
 ---
-id: opposing parties contact information
+id: opposing_parties_contact_information
 question: |
   What is ${other_parties[i]}'s contact information?
+subquestion: |  
+  <span style="color: green; font-weight: bold;">While you don’t have to know the defendant’s contact info right now, sharing it here can help the court process your case faster.</span>
 fields:
   - Phone: other_parties[i].phone_number
-    required: True
+    required: False
   - Email: other_parties[i].email_address
     required: False
 ---
