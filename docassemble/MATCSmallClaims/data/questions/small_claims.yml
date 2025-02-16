@@ -387,7 +387,7 @@ fields:
       states_list(country_code=AL_DEFAULT_COUNTRY)
     default: ${ AL_DEFAULT_STATE }
   - ${ users[i].address.zip_label}: users[i].address.zip
-    required: False
+    required: True
 ---
 template: why_contact_info_needed_template
 subject: |
