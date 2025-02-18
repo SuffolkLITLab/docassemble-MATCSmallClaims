@@ -11,7 +11,7 @@ metadata:
     Small Claims
   short title: >-
     Small Claims
-  description: |-
+  description: |-F
     This interview helps a Massachusetts plaintiff file a notice of their small claim with the court.
   can_I_use_this_form: |
     If you are a plaintiff, you can use this interview to file a notice of your small claim with the court.
@@ -63,7 +63,10 @@ code: |
   interview_short_title = "File for small claims"
 ---
 code: |
-  al_form_type = "starts_case"  
+  al_form_type = "starts_case"
+---
+code: |
+  al_form_requires_digital_signature = False
 ---
 objects:
   - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'phone_number'])
