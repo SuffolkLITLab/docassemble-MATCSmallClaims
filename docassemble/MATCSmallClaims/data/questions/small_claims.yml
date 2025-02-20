@@ -81,6 +81,8 @@ objects:
         )
 ---
 sections:
+  - welcome: Welcome
+  - required_info: Required information
   - plaintiff_info: Plaintiff information
   - defendant_info: Defendant information
   - court_selection: Court selection
@@ -96,7 +98,13 @@ id: interview_order_small_claims
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
+
+  nav.set_section("welcome")
+  al_intro_screen
   small_claims_intro
+
+  nav.set_section("required_info")
+  acknowledged_information_use
   
   nav.set_section("plaintiff_info")
   al_person_answering
@@ -104,9 +112,9 @@ code: |
     attorneys.there_are_any = True
   if al_person_answering == "user":
     attorneys.there_are_any = False
-  
+
   attorneys.gather()
-  if attorneys.number_gathered() > 0: 
+  if attorneys.number_gathered() > 0:
     attorneys[0].bbo_number
     attorneys[0].address.address
     attorneys[0].phone_number
@@ -118,26 +126,26 @@ code: |
     users[0].phone_number
   set_parts(subtitle=str(users))
   set_progress(28)
-  
+
   nav.set_section("defendant_info")
   other_parties.gather()
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
   other_parties[0].is_current_military
-  
+
   nav.set_section("court_selection")
   set_parts(subtitle=str(users))
   set_progress(42)
-  # docket_number
   trial_court.department
-  
+
   nav.set_section("claim_details")
   defendant_owes_amount
   filing_fee
   reason_for_suing_defendant
   if exhibit_attachment.exhibits.has_exhibits:
     exhibit_attachment.exhibits.gather()
+
   nav.set_section("mediation")
   is_willing_mediation
   trial_court
@@ -180,33 +188,27 @@ features:
 ---
 id: basic questions intro screen
 question: |
-  File a small claims complaint
+  Welcome: File a Notice of Small Claim
 subquestion: |
-  This will help you fill out the forms to file a small claim by conducting an interview—
-  that is, by asking questions in plain language for you to answer. It will not give you 
-  legal advice.
-
-  A small claim is a legal process that is less complex than a traditional civil case. Your 
+  A small claim is a legal process that is simpler than most other civil cases. Your 
   case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the court,
-  not by a judge or jury. More information and resources on the small claims process are 
+  not by a judge or a jury. More information and resources on the small claims process are 
   available on the [Massachusetts self-help website](https://www.mass.gov/small-claims).
 
   Tap the {green words} in any screen for a definition or more information.
 
   % if form_approved_for_email_filing:
-  Once you have completed this interview, you will be able to electronically file the 
-  completed forms in the proper court.
+  At the end of your interview, you will be able to electronically file the completed forms with the court.
   % else:
-  Once you have completed this interview, you will be able to download and print the 
-  completed forms to file in the proper court.
+  At the end of your interview, you will be able to download, print, and file the completed forms with the court.
   % endif
 
-  If you are ready to begin the interview, please accept the **terms of use and privacy 
-  policy**.
+  While this interview can explain how to file your Notice of Small Claim, it **cannot** tell you how to win your case or give you legal advice.
+  
+  To begin the interview, accept the **Terms of Use and Privacy Policy**.
   
   % if chat_partners_available().help:
-  Live help is currently available in this interview. Click the speech bubble
-  (:comment-alt:) in the navigation bar to connect to a live advocate for help.
+  This interview offers **Live Help.** Click the speech bubble (:comment-alt:) in the navigation bar to connect to a live advocate for help.
   % endif
 fields:
   - note: |
@@ -218,7 +220,7 @@ fields:
 continue button field: al_intro_screen
 terms:
   green words: |
-    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words. 
+    Green words include legal terms, or shorter ways of explaining them. You can see these explanations when you tap the green words.
 validation code: |
   if not acknowledged_information_use:
     validation_error("You must accept the terms of use to continue.", field="acknowledged_information_use")
@@ -226,18 +228,18 @@ validation code: |
 id: small claims interview info
 continue button field: small_claims_intro
 question: |
-  Information for the small claims complaint process
+  Required Information to File a Notice of Small Claim
 subquestion: |
-  In order to complete this interview you will need to provide:
+  To complete this interview, you will need to know:
   
-  1. The full name, address, and phone number or email address of anyone you intend to sue
-  2. A summary or reason why you are suing them
-  3. The military status of anyone you intend to sue (information about verifying military status will be provided)
+  1. The full name of anyone you intend to sue, and at least one way to contact them
+  2. Your reasoning for why you are suing them
+  3. The military status of anyone you intend to sue (more information about military status will be given later in the interview)
   
-  When you are finished, you will be able to file your claim electronically, or download 
-  and print your claim forms so you can deliver them to the courthouse yourself.
+  When you finish the interview, you can either **file your claim electronically** or **download 
+  and print your claim forms to bring to the court** on your own.
   
-  You will also need to pay a filing fee. 
+  To file a Notice of Small Claim, you must also pay a filing fee. 
 
   Amount of your claim | Filing fee 
   ---------------------|-----------
@@ -246,12 +248,7 @@ subquestion: |
   $2,001–5,000         | $100 
   $5,001 or more       | $150
   
-  If you cannot afford to pay the filing fee you can ask the court for permission to file 
-  for free. This interview will help you ask the court.
-  
-  Please note that this interview cannot tell you what you should say to meet the legal 
-  basis needed for a judge to rule in your favor. The court can provide information about 
-  how to file a claim, but it cannot give legal advice.
+  If you cannot afford the filing fee, you can use this interview to ask the court for permission to file for free.
 
   Most people take about 30 minutes to complete this interview.
 ---
@@ -266,7 +263,7 @@ fields:
       - No: user
     label above field: True
     under text: |
-      If you are an attorney but you are filing this claim on your own behalf, select No.
+      If you are an attorney, but you are filing this claim on your own behalf, select No.
 ---
 id: attorney information
 sets:
