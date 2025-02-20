@@ -398,7 +398,7 @@ content: |
 id: first plaintiff's contact information
 question: |
   % if al_person_answering == "user":
-  What is your contact information??
+  What is your contact information?
   % else:
   What is ${ users[0] }'s contact information?
   % endif
