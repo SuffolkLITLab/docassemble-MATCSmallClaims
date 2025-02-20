@@ -703,13 +703,13 @@ fields:
       - Business or organization: business
 
   - note: |
-      To find the exact legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
+      To find the legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
       
-      If the defendant is not a corporation and is doing business under a trade name ("doing business as," or d/b/a): 
+      If the defendant is not a corporation, and is doing business under a trade name ("doing business as," or d/b/a): 
     
       - Verify the name by calling the city or town hall where the business is located.
     
-      - Any entity that does business under a trade name is required to register in the local city or town clerk's office where the business is located.
+      - Any entity that does business under a trade name must register in the local city or town clerk's office where the business is located.
 
     show if:
       variable: other_parties[i].person_type
@@ -785,9 +785,9 @@ fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
   - note: |
-      1. If you know the defendant’s Social Security number or birth date, you can check online if they are on active military duty using the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you are required to provide a copy of your search results to the court (typically, a certificate generated from the SCRA Website).
+      1. If you know the defendant’s **date of birth** or **social security number**, you can check their military status on the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you must send a copy of your search results to the court. The SRCA website will create this search results certificate for you.
       
-      2. If you don't use the SCRA Website, provide details supporting your claim about the defendant's military status. You can include facts from your contacts or communications with the defendant. You may also write to the appropriate military service headquarters, listed [here](https://www.defense.gov/Resources/Military-Departments/), to determine the military status.
+      2. If you don't use the SCRA Website, explain how else you know the defendant's military status. For example, you may know if the defendant is in the military just by talking with them. You can also write to a specific branch of the military, listed [here](https://www.defense.gov/Resources/Military-Departments/), to confirm whether the defendant is on active duty.
       
       In either case, tell us about your search results or correspondences.
     js show if: |
@@ -802,22 +802,22 @@ fields:
     show if:
       variable: other_parties[i].is_current_military
       is: True
-  - "Why is it that you don't know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
+  - "Why don't you know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
     input type: area
     maxlength: 1395
     js show if: | 
       val("still_unsure") == true && val("other_parties[i].is_current_military") === "None"
   - note: |
-      The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
+      **Note:** the court may require you to post a bond or may issue other orders to protect the rights of any defendant on active military duty.
     show if: still_unsure
 ---
 id: wants_fee_waiver
 question: |
-  You may qualify for a fee waiver
+  Fee waiver eligibility
 subquestion: |
-  Based on the amount of your claim the filing fee will be ${ currency(filing_fee) }. 
+  Based on the amount of your claim, the filing fee will be ${ currency(filing_fee) }. 
   
-  However, if you earn under a certain amount you can ask the court to help pay the filing fee.
+  However, if you earn under a certain amount, you can ask the court to help you pay the filing fee.
   
 fields:
   - Do you want to find out if you qualify for a fee waiver?: wants_fee_waiver
