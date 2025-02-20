@@ -63,7 +63,10 @@ code: |
   interview_short_title = "File for small claims"
 ---
 code: |
-  al_form_type = "starts_case"  
+  al_form_type = "starts_case"
+---
+code: |
+  al_form_requires_digital_signature = False
 ---
 objects:
   - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'phone_number'])
