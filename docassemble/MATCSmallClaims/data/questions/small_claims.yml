@@ -140,9 +140,9 @@ code: |
   trial_court.department
 
   nav.set_section("claim_details")
+  reason_for_suing_defendant
   defendant_owes_amount
   filing_fee
-  reason_for_suing_defendant
   if exhibit_attachment.exhibits.has_exhibits:
     exhibit_attachment.exhibits.gather()
 
@@ -387,7 +387,7 @@ fields:
       states_list(country_code=AL_DEFAULT_COUNTRY)
     default: ${ AL_DEFAULT_STATE }
   - ${ users[i].address.zip_label}: users[i].address.zip
-    required: False
+    required: True
 ---
 template: why_contact_info_needed_template
 subject: |
@@ -546,11 +546,30 @@ content:  |
   1. If your claim is based on property damage from an automobile accident, the amount of your claim can be more than $7,000.
   2. If you are suing for unfair and deceptive practices under [Mass. Gen. Laws ch. 93A](https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXV/Chapter93A) or under the security deposit statute, [Mass. Gen. Laws ch. 186, § 15B](https://malegislature.gov/Laws/GeneralLaws/PartII/TitleI/Chapter186/Section15B), the court may award additional damages above the $7,000 limit, but the base amount of your claim must be $7,000 or less.
 ---
+id: statement of claim
+question: Explain what happened in your case
+subquestion: |
+  Tell the court what happened and explain why you are suing the defendant as clearly as you can. 
+  Be sure to include:
+  
+  * The dates when the main events of your case took place, if you remember them
+  * The amount of money you are asking the court to award you
+  * How you determined the amount of money you are owed
+
+  If a law allows you to ask the court to award double or triple the amount of money that you are owed, then you should also explain how the defendant harmed you and why the court should award you more money damages for that harm.
+
+  You will be able to attach supporting documents on the next screen.
+fields:
+  - Reason for your claim: reason_for_suing_defendant
+    input type: area
+    rows: 10
+    label above field: True
+---
 id: claim amount
 question: |
-  Claim amount
+  How much money does the defendant owe you in this case?
 fields: 
-  - Amount defendant owes you: defendant_owes_amount
+  - Amount owed: defendant_owes_amount
     datatype: currency
     min: 0
   - "Your claim is for more than $7,000": reason_pexceeds_7000
@@ -617,49 +636,25 @@ script: |
     $(getField("defendant_owes_amount")).on("change", getFilingFee);
   </script>  
 ---
-id: statement of claim
-question: Describe your claim
-subquestion: |
-  Clearly state your claim so the defendant can understand why you are suing them. Make 
-  sure to include:
-  
-  * The date(s) of the event that is the basis of your claim
-  * Your requests for relief
-  * A breakdown or calculation showing how you arrived at the amount of your claim
-
-  If a law allows you to seek double or triple the amount of your claim, then you must 
-  include this specific information in your statement of claim.
-
-  You will be able to attach supporting documents on the next screen.
-fields:
-  - Reason for your claim: reason_for_suing_defendant
-    input type: area
-    rows: 10
-    label above field: True
----
-template: mediation_learn_more
-subject:  |
-  Learn more about mediation
-content:  |
-  To learn more about mediation, click [here](https://www.mass.gov/info-details/about-mediation)
----
-id: Additional Information
+id: mediation_question
+mandatory: True
 question: |
-  Are you willing to attempt to settle this claim through mediation?
-subquestion: | 
-  ${ card_start("What is mediation?", color="info", icon="comment") }
-  Mediation is when all parties in a lawsuit sit down with a neutral person who helps them discuss the case and tries to negotiate a settlement or resolution.
-   
-  The Plaintiff must notify the court if they desire mediation. The defendant may consent to mediation on the trial date. You do not lose your right to a trial if you go to mediation and it is unsuccessful. 
-  
-  ${ card_end() }
-  ${ collapse_template(mediation_learn_more) } 
-  
-  
+  Do you want to try mediation to settle your small claim?
+subquestion: |  
+  Mediation is a way to settle your case **without going to court.**  
+
+  During mediation, the parties in a lawsuit sit down with a neutral person, called a mediator, to talk out a solution to their legal problem.  
+
+  <span style="border-bottom: 1px dotted green;" title="This link will take you to Mass.gov, an external website.">
+    <a href="https://www.mass.gov/info-details/about-mediation" target="_blank" style="color: green; text-decoration: none;">
+      Mediation can also be faster and less expensive than going to court.
+    </a>
+  </span>
+
 fields:
-  - "Are you willing to mediate?": is_willing_mediation
+  - "Would you like to try mediation?": is_willing_mediation
     datatype: yesnoradio
----    
+---
 id: Tell us about a court
 question: |
   % if al_form_type == 'starts_case':
@@ -758,18 +753,36 @@ fields:
       variable: other_parties[i].person_type
       is: business
 ---
-id: opposing parties contact information
+id: opposing_parties_contact_information
 question: |
   What is ${other_parties[i]}'s contact information?
+subquestion: |  
+  <span style="color: green; font-weight: bold;">While you don’t have to know the defendant’s contact info right now, sharing it here can help the court process your case faster.</span>
 fields:
   - Phone: other_parties[i].phone_number
-    required: True
+    required: False
   - Email: other_parties[i].email_address
     required: False
 ---
-id: Military Affidavit
+id: military_affidavit_question
+mandatory: True
 question: | 
+  % if other_parties.number() > 1:
   Is ${other_parties[i]} in the military?
+  % else:
+  Is the defendant in the military?
+  % endif
+subquestion: |  
+  - **Federal law,** including the Servicemembers Civil Relief Act (SCRA), provides protections to active-duty military members in legal cases.  
+  - If the defendant is in the military, the court may need to **pause the case** or take extra steps before issuing a judgment against them.  
+  - This ensures that service members are **not unfairly disadvantaged** while fulfilling their military duties.  
+
+  <span style="border-bottom: 1px dotted green;" title="This link from Mass.gov will open a PDF in a new window.">
+    <a href="https://www.mass.gov/doc/military-affidavit-instructions-for-self-represented-litigants/download" target="_blank" style="color: green; text-decoration: none;">
+      Learn more about filing a Military Affidavit with the court.
+    </a>
+  </span>
+
 fields:
   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].is_current_military
     datatype: yesnomaybe
@@ -799,12 +812,6 @@ fields:
   - note: |
       The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
     show if: still_unsure
-comment: |
-  % if other_parties.number() > 1: 
-  other_parties.as_noun("party")   
-  https://assemblyline.suffolklitlab.org/docs/authoring/dynamic_phrasing_based_on_values/#pluralize-a-word-depending-on-the-number-of-people-in-a-list
-  
-  #The court may require you to post a bond or may issue other orders to protect the rights of the defendant if they are on active military duty.
 ---
 id: wants_fee_waiver
 question: |
@@ -903,14 +910,14 @@ review:
     button: |
       **Court:**
       ${ trial_court }
-  - Edit: defendant_owes_amount
-    button: |
-      **Amount of claim:** 
-      ${ currency(defendant_owes_amount) }
   - Edit: reason_for_suing_defendant
     button: |
       **Statement of claim:**
       > ${ single_paragraph(reason_for_suing_defendant) }
+  - Edit: defendant_owes_amount
+    button: |
+      **Amount of claim:** 
+      ${ currency(defendant_owes_amount) }
   - Edit: exhibit_attachment.exhibits.has_exhibits
     button: |
       **Exhibits attached?**
@@ -1111,9 +1118,9 @@ attachment:
       - "defendant1_address_line_two": ${ defendants[0].address.line_two() }
       - "defendant1_phone_number": ${ defendants[0].phone_number }
       - "defendant2_phone_number": ${ defendants[1].phone_number }
+      - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
       - "defendant_owes_amount": ${ currency(defendant_owes_amount) }
       - "defendant_court_costs_amount": ${ currency(filing_fee) }
-      - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
       - "signature_date": ${ signature_date }
       - "user_signature": ${ users[0].signature }
       - "is_willing_mediation_yes": ${ is_willing_mediation }
