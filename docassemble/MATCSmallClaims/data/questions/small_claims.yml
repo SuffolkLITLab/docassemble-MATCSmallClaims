@@ -704,9 +704,9 @@ sets:
 id: names of opposing parties
 question: |
   % if user_started_case:
-  Who is the ${ ordinal(i) } person or business you're filing this claim against?
+  Who are you filing this claim against?
   % else:
-  Who is the ${ ordinal(i) } person or business filing this claim against you?
+  Who is filing this claim against you?
   % endif
 
 fields:      
