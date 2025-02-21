@@ -50,15 +50,12 @@ metadata:
   update_notes: |
 ---
 code: |
-  # This controls the default country and list of states in address field questions
+  # Default country and state for addresses
   AL_DEFAULT_COUNTRY = "US"
----
-code: |
-  # This controls the default state in address field questions
   AL_DEFAULT_STATE = "MA"
 ---
 code: |
-  github_repo_name =  'docassemble-MATCSmallClaims'
+  github_repo_name = 'docassemble-MATCSmallClaims'
 ---
 code: |
   interview_short_title = "File for small claims"
@@ -69,7 +66,7 @@ code: |
 objects:
   - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
-  - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute= ['address.address', 'phone_number', 'is_current_military'])
+  - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute=['address.address', 'phone_number', 'is_current_military'])
   - exhibit_attachment: ALExhibitDocument.using(
           title="Exhibits",
           filename="exhibits",
@@ -79,36 +76,34 @@ objects:
         )
 ---
 sections:
-  - welcome: Welcome
-  - required_info: Required information
+  - introduction: Introduction and terms
+  - required_info: Information before filing
   - plaintiff_info: Plaintiff information
   - defendant_info: Defendant information
   - court_selection: Court selection
-  - claim_details: Your claim
+  - claim_details: Your claim details
   - mediation: Mediation
   - wants_fee_waiver: Fee waiver
-  - review_small_claims: Review your answers
+  - review_small_claims: Review your forms
+  - download_small_claims: Download and file your forms
 ---
-#################### Interview order #####################
-comment: |
-  Controls order and branching logic for questions specific to this form
+#################### Interview Order #####################
 id: interview_order_small_claims
 code: |
-  # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
 
-  nav.set_section("welcome")
-  al_intro_screen
-  small_claims_intro
-
-  nav.set_section("required_info")
-  acknowledged_information_use
+  nav.set_section("introduction")
+  terms_accepted
   
+  nav.set_section("required_info")
+  small_claims_intro
+  filing_fee_acknowledged
+
   nav.set_section("plaintiff_info")
   al_person_answering
   if al_person_answering == "attorney":
     attorneys.there_are_any = True
-  if al_person_answering == "user":
+  else:
     attorneys.there_are_any = False
 
   attorneys.gather()
@@ -158,19 +153,16 @@ code: |
   users[0].states_above_true
   interview_order_small_claims = True
 ---
-###################### Main order ######################
-comment: |
-  This block includes the logic for standalone interviews.
-  Delete mandatory: True to include in another interview
+###################### Main Order ######################
 mandatory: True
 code: |
-  al_intro_screen
+  interview_order_small_claims  
+  terms_accepted
   small_claims_intro
-  interview_order_small_claims
+  basic_questions_intro_screen  
   signature_date
   small_claims_preview_question 
   users[0].signature
-  # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
       data={
@@ -184,71 +176,75 @@ features:
   progress bar: True
   css: styles.css
 ---
-id: basic questions intro screen
+#################### Terms & conditions #####################
+id: terms_and_privacy
+section: introduction
 question: |
-  Welcome: File a Notice of Small Claim
+  Terms and privacy policy
 subquestion: |
-  A small claim is a legal process that is simpler than most other civil cases. Your 
-  case will be heard by the Clerk-Magistrate or an Assistant Clerk-Magistrate of the court,
-  not by a judge or a jury. More information and resources on the small claims process are 
-  available on the [Massachusetts self-help website](https://www.mass.gov/small-claims).
 
-  Tap the {green words} in any screen for a definition or more information.
+  This site does not provide legal advice.  
+  If you need a lawyer, find your local [legal aid provider](https://www.mass.gov/legal-aid).  
 
-  % if form_approved_for_email_filing:
-  At the end of your interview, you will be able to electronically file the completed forms with the court.
-  % else:
-  At the end of your interview, you will be able to download, print, and file the completed forms with the court.
-  % endif
-
-  While this interview can explain how to file your Notice of Small Claim, it **cannot** tell you how to win your case or give you legal advice.
+  ---
   
-  To begin the interview, accept the **Terms of Use and Privacy Policy**.
-  
-  % if chat_partners_available().help:
-  This interview offers **Live Help.** Click the speech bubble (:comment-alt:) in the navigation bar to connect to a live advocate for help.
-  % endif
+  ${ display_template(al_terms_of_use, scrollable=True) }
+
+  To continue, you must accept the terms of use.  
 fields:
-  - note: |
-      ${ display_template(al_terms_of_use, scrollable=True) }
-      To continue, you must accept our terms of use
   - I accept the terms of use: acknowledged_information_use
     datatype: yesnowide
     grid: 8
-continue button field: al_intro_screen
-terms:
-  green words: |
-    Green words include legal terms, or shorter ways of explaining them. You can see these explanations when you tap the green words.
 validation code: |
   if not acknowledged_information_use:
     validation_error("You must accept the terms of use to continue.", field="acknowledged_information_use")
+continue button field: terms_accepted
 ---
-id: small claims interview info
+id: small_claims_interview_info
 continue button field: small_claims_intro
 question: |
-  Required Information to File a Notice of Small Claim
+  Before you file a notice of small claim
 subquestion: |
-  To complete this interview, you will need to know:
-  
-  1. The full name of anyone you intend to sue, and at least one way to contact them
-  2. Your reasoning for why you are suing them
-  3. The military status of anyone you intend to sue (more information about military status will be given later in the interview)
-  
-  When you finish the interview, you can either **file your claim electronically** or **download 
-  and print your claim forms to bring to the court** on your own.
-  
-  To file a Notice of Small Claim, you must also pay a filing fee. 
+  To file your notice of small claim, you will need to know:  
 
-  Amount of your claim | Filing fee 
-  ---------------------|-----------
-  $500 or less         | $40
-  $501–2,000           | $50
-  $2,001–5,000         | $100 
-  $5,001 or more       | $150
+  - The full name of each person or business you're filing the claim against.  
+  - The reasons for your claim and how you calculated your claim amount.  
+  - The military status of the people on the other side of your claim,  
+    to confirm that they are not on active duty while the claim is being decided.  
+
+  When you finish the interview, you can:
   
-  If you cannot afford the filing fee, you can use this interview to ask the court for permission to file for free.
+  - File your claim electronically, or  
+  - Download and print your forms to bring to the court in person.  
 
   Most people take about 30 minutes to complete this interview.
+---
+id: small_claims_filing_fee
+continue button field: filing_fee_acknowledged
+question: |
+  Filing fees for small claims
+subquestion: |
+  To file a notice of small claim, you must pay a filing fee based on the amount of your claim. If you cannot afford the filing fee, you can use this interview to ask the court if you may file your small claim for free.
+
+  Amount of your claim | Filing fee
+  ---------------------|-----------  
+  $500 or less         | $40  
+  $501–2,000           | $50  
+  $2,001–5,000         | $100  
+  $5,001 or more       | $150  
+---
+id: is_user_an_attorney
+question: | 
+  Are you an attorney?
+fields:
+  - no label: al_person_answering
+    datatype: radio
+    choices: 
+      - Yes: attorney
+      - No: user
+    label above field: True
+    under text: |
+      If you are an attorney, but you are filing this claim on your own behalf, select No.
 ---
 id: is user an attorney
 question: | 
@@ -323,7 +319,7 @@ id: additional attorneys
 question: |
   Are there any other attorneys representing the plaintiff?
 subquestion: |
-  It is not common to have more than one attorney on a small claim, but you can add more. 
+  While it is not common to have more than one attorney in a small claim, you may list more than one. 
 fields:
   - no label: attorneys.there_is_another
     datatype: yesnoradio
@@ -333,8 +329,7 @@ sets:
   - users[i].name.last
   - users[i].name.middle
   - users[i].name.suffix  
-  - users[i].name.business
-id: plaintiff's name
+id: plaintiff_name
 question: |
   % if i == 0 and al_person_answering == "user":
   What is your name?
@@ -346,8 +341,30 @@ question: |
     % endif
   % endif
 fields:
-  - code: |
-      users[i].name_fields(person_or_business="unsure")      
+  - field: users[i].name.first
+    label: First name
+    required: True
+  - field: users[i].name.middle
+    label: Middle name
+    required: False
+  - field: users[i].name.last
+    label: Last Name
+    required: True
+  - field: users[i].name.suffix
+    label: Suffix (Jr., Sr., etc.)
+    required: False
+---
+id: plaintiff_type
+question: |
+  Are you filing for yourself or for a business?
+fields:
+  - field: users[i].person_type
+    label: Select one
+    input type: radio
+    required: True
+    choices:
+      - Myself, as a person: person
+      - For a business: business
 ---
 id: plaintiff's address
 question: |
@@ -460,9 +477,9 @@ validation code: |
 id: any other opposing parties
 question: |
   % if user_started_case:
-  Is there any other **defendant**?
+  Is there anyone else on the other side of your claim?
   % else:
-  Is there any one else **on your side**?
+  Is there anyone else on your side of the claim?
   % endif
 fields:
   - no label: other_parties.there_is_another
@@ -471,9 +488,9 @@ fields:
 id: any other plaintiffs
 question: |
   % if al_person_answering == "attorney":
-  Are there additional plaintiffs?
+  Are there any additional plaintiffs?
   % else:
-  Is anyone else on your side of the case?
+  Is there anyone else on your side of the case?
   % endif
 subquestion: |
   % if len(users.elements) > 1:  
@@ -687,15 +704,14 @@ sets:
 id: names of opposing parties
 question: |
   % if user_started_case:
-  Name of ${ ordinal(i) } **defendant** in this
-  matter
+  Who is the ${ ordinal(i) } person or business you're filing this claim against?
   % else:
-  Name of ${ ordinal(i) } **plaintiff** or petitioner in this matter
+  Who is the ${ ordinal(i) } person or business filing this claim against you?
   % endif
 
 fields:      
   - field: other_parties[i].person_type
-    label: Is this a person, or a business?
+    label: Are you filing against a person or a business?
     input type: radio
     required: True
     choices:
@@ -755,7 +771,7 @@ id: opposing_parties_contact_information
 question: |
   What is ${other_parties[i]}'s contact information?
 subquestion: |  
-  <span style="color: green; font-weight: bold;">While you don’t have to know the defendant’s contact info right now, sharing it here can help the court process your case faster.</span>
+  While you don’t have to know the defendant’s contact info right now, sharing it here can help the court process your case faster.
 fields:
   - Phone: other_parties[i].phone_number
     required: False
@@ -1044,7 +1060,7 @@ subquestion: |
 
   ${ exhibit_attachment.add_action() }
 ---
-id: download small_claims
+id: download_small_claims
 event: small_claims_download
 question: |
   All done
