@@ -410,7 +410,7 @@ subject: |
 content: | 
   It is important that the person or organization you deliver this form to
   is able to contact you. Make sure to include at least one way to reach you
-  other than mail.
+  other than by mail.
 ---
 id: first plaintiff's contact information
 question: |
@@ -437,10 +437,7 @@ fields:
     input type: area
     required: False
     help: |
-      If you do not have a phone number or email, provide
-      specific contact instructions. For example, use a friend's phone number.
-      But the friend must be someone you can rely on to give you a
-      message.
+      If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you the message.
 validation code: |
   if (not showifdef('users[0].phone_number') and \
       (not showifdef('users[0].mobile_number')) and \
@@ -463,10 +460,7 @@ fields:
     input type: area
     required: False
     help: |
-      If you do not have a phone number or email, provide
-      specific contact instructions. For example, use a friend's phone number.
-      But the friend must be someone you can rely on to give you a
-      message.
+      If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you the message.
 validation code: |
   if (not showifdef('users[i].phone_number') and \
       (not showifdef('users[i].mobile_number')) and \
@@ -494,7 +488,7 @@ question: |
   % endif
 subquestion: |
   % if len(users.elements) > 1:  
-  So far you have told us about ${comma_and_list(users.complete_elements())}.
+  So far, you have told us about ${comma_and_list(users.complete_elements())}.
   % endif
 fields:
   - no label: users.there_is_another
@@ -558,8 +552,8 @@ content:  |
   The base amount you are suing for (including the value of property) must be $7,000 or 
   less. There are two exceptions:
   
-  1. If your claim is based on property damage from an automobile accident, the amount of your claim can be more than $7,000.
-  2. If you are suing for unfair and deceptive practices under [Mass. Gen. Laws ch. 93A](https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXV/Chapter93A) or under the security deposit statute, [Mass. Gen. Laws ch. 186, § 15B](https://malegislature.gov/Laws/GeneralLaws/PartII/TitleI/Chapter186/Section15B), the court may award additional damages above the $7,000 limit, but the base amount of your claim must be $7,000 or less.
+  1. If your claim is based on property damage from an automobile accident, then your claim amount can be more than $7,000.
+  2. If you are suing for unfair and deceptive practices under [Mass. Gen. Laws ch. 93A](https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXV/Chapter93A) or under the security deposit statute, [Mass. Gen. Laws ch. 186, § 15B](https://malegislature.gov/Laws/GeneralLaws/PartII/TitleI/Chapter186/Section15B), the court may award additional damages above the $7,000 limit. However, the base amount of your claim still must be $7,000 or less.
 ---
 id: statement of claim
 question: Explain what happened in your case
