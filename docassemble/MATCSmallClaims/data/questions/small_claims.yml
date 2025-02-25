@@ -635,19 +635,17 @@ mandatory: True
 question: |
   Do you want to try mediation to settle your small claim?
 subquestion: |  
-  Mediation is a way to settle your case **without going to court.**  
-
-  During mediation, the parties in a lawsuit sit down with a neutral person, called a mediator, to talk out a solution to their legal problem.  
-
-  <span style="border-bottom: 1px dotted green;" title="This link will take you to Mass.gov, an external website.">
-    <a href="https://www.mass.gov/info-details/about-mediation" target="_blank" style="color: green; text-decoration: none;">
-      Mediation can also be faster and less expensive than going to court.
-    </a>
-  </span>
-
+ ${collapse_template(mediation_template)}
 fields:
   - "Would you like to try mediation?": is_willing_mediation
     datatype: yesnoradio
+---
+template: mediation_template
+subject: What is mediation?
+content: |
+ - Mediation is a way to settle your claim without going to court.
+ - During mediation, the parties in a lawsuit sit down with a neutral person, called a mediator, to talk out a solution to their legal problem.
+ - You do not lose your right to a trial if you can't resolve your claim in mediation.
 ---
 id: Tell us about a court
 question: |
