@@ -84,8 +84,8 @@ sections:
   - claim_details: Your claim details
   - mediation: Mediation
   - wants_fee_waiver: Fee waiver
-  - review_small_claims: Review your forms
-  - download_small_claims: Download and file your forms
+  - review_small_claims: Review your answers
+  - download_small_claims: Download and file your claim
 ---
 #################### Interview Order #####################
 id: interview_order_small_claims
