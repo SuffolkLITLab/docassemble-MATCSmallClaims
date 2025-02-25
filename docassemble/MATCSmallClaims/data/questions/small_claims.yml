@@ -76,8 +76,8 @@ objects:
         )
 ---
 sections:
-  - introduction: Introduction and terms
-  - required_info: Information before filing
+  - introduction: Getting started
+  - required_info: Before you file
   - plaintiff_info: Plaintiff information
   - defendant_info: Defendant information
   - court_selection: Court selection
@@ -159,7 +159,6 @@ code: |
   interview_order_small_claims  
   terms_accepted
   small_claims_intro
-  basic_questions_intro_screen  
   signature_date
   small_claims_preview_question 
   users[0].signature
