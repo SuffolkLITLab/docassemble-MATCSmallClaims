@@ -1,6 +1,64 @@
 ---
 include:
   - docassemble.EFSPIntegration:efiling_integration.yml
+--
+################### Case codes ##########################
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts?with_names=true
+
+
+################### COURTS ###################
+# Housing - Central (Worcester)
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535
+
+# Housing - Eastern (Boston)
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537
+
+# District Court - Concord
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383
+
+# District Court - Ipswich
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384
+
+# BMC - East Boston
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408
+
+# BMC - Brighton
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418
+
+
+# ################### CATEGORIES ###################
+# Small Claims code is the same for all of these (5990)
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/categories
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/categories SAME
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/categories
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/categories
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/categories
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/categories
+
+
+# ################### CASE TYPES ###################
+# Case type codes are all the same (5991-5994 )
+# "Small Claim $2001 - $5000", "Small Claim over $5000", "Small Claim $501 - $2000", "Small Claims $500 or less"
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/case_types?category_id=5990
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/case_types?category_id=5990
+
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/case_types?category_id=5990
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/case_types?category_id=5990
+
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/case_types?category_id=5990
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/case_types?category_id=5990
+
+
+# ################### FILING TYPES ###################
+# 6143 is missing in all of these (Statement of Small Claims entered through e-file process)
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/filing_types
+
+
 ---
 code: |
   jurisdiction_id = 'massachusetts'
@@ -17,7 +75,6 @@ code: |
   efile_case_category_exclude = None
 
 
-
   if defendant_owes_amount > 5000:
     efile_case_type_filters = ['Small Claim over $5000']
   elif 2000 < defendant_owes_amount <= 5000:
@@ -32,6 +89,21 @@ code: |
   # efile_case_type_default = ''  
 
   efile_case_type_exclude = None
+---
+
+code: |
+  # Description: Statement of Small Claims entered through e-file process
+  # small_claims_attachment.filing_type = '6143'
+  small_claims_attachment.filing_type = '6142'
+
+  # Description: "Public"
+  small_claims_attachment.document_type = '6020'
+
+  # Description: "Lead Document"
+  small_claims_attachment.filing_component = '332'
+  small_claims_attachment.filing_action = 'efile'
+  small_claims_attachment.completed = True
+  small_claims_attachment.filing_parties = [user.instanceName for user in users]
 ---
 code: |
   # These are explicit codes (as opposed to fuzzy matching).
@@ -61,22 +133,6 @@ code: |
 
   # Code for "impounded". All fee waivers are impounded by default.
   affidavitofindigency_attachment.document_type_default = "6587"
----
-
-# [small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment]
-
----
-code: |
-  # Description: Statement of Small Claims entered through e-file process
-  small_claims_attachment.filing_type = '6143'
-
-  # Description: "Public"
-  small_claims_attachment.document_type = '6020'
-  small_claims_attachment.filing_component = ''
-  small_claims_attachment.filing_action = 'efile'
-  small_claims_attachment.completed = True
-  small_claims_attachment.filing_parties = [user.instanceName for user in users]
-
 
 ---
 code: |
