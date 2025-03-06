@@ -2,9 +2,11 @@ include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.MassAccess:massaccess.yml
   - docassemble.ALAffidavitOfIndigency:affidavit_body.yml
+  - docassemble.EFSPIntegration:efiling_integration.yml
   - docassemble.demo:data/questions/examples/cards.yml
   - docassemble.ALToolbox:collapse_template.yml
   - docassemble.MATCTheme:matc_theme.yml
+  - efiling.yml
 ---
 metadata:
   title: >-
@@ -65,6 +67,9 @@ code: |
 code: |
   al_form_type = "starts_case"  
 ---
+code: |
+  form_uses_efiling = True
+---
 objects:
   - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
@@ -94,6 +99,11 @@ code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
   small_claims_intro
+
+  if can_check_efile:
+    tyler_login
+
+  user_started_case
   
   nav.set_section("plaintiff_info")
   al_person_answering
@@ -115,7 +125,10 @@ code: |
     users[0].phone_number
   set_parts(subtitle=str(users))
   set_progress(28)
-  
+
+  if can_check_efile:
+    lead_contact = users[0]
+
   nav.set_section("defendant_info")
   other_parties.gather()
   defendants
@@ -148,6 +161,16 @@ code: |
   nav.set_section("review_small_claims")
   users[0].states_above_true
   interview_order_small_claims = True
+
+  nav.set_section('review_efile_info')
+  if can_check_efile:
+    if is_indigent:
+      # have gotten permission: can use waiver method for subsequent filings
+      tyler_payment_id = default_jurisdiction_waiver
+    else:
+      tyler_payment_id
+    all_required_screens_shown
+    ready_to_efile
 ---
 ###################### Main order ######################
 comment: |
@@ -536,6 +559,13 @@ fields:
     choices: all_courts.filter_courts(allowed_courts)
     css class: not-required-if-disabled
 ---
+only sets: efile_setup
+# Overrides EFSPIntegration, don't bother getting the court id before this
+# I believe this is somehow overriding the interview's existing trial_courts set-up with
+# something in the e-file server. Not sure, but setting it to False seems to work
+code: |
+  efile_setup = False
+---
 template: claims_greater_than_7000
 subject:  |
   Claims greater than $7,000
@@ -574,6 +604,9 @@ fields:
       </div>
 script: |
   <script>
+  // Note: Note: Some values (e.g., 500.05) do not fit within any defined range.
+  // Contact court and they determined this hasn't been an issue in the past so
+  // we will for now make no efforts to address this.
     const fees = [
       {
         min: 0,
@@ -1061,7 +1094,7 @@ progress: 100
 objects:
   - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
   - small_claims_attachment: ALDocument.using(title="Small claims", filename="small_claims", enabled=True, has_addendum=False, )
-  - affidavit_of_indigency: ALDocument.using(filename=&quot;affidavit-of-indigency.pdf&quot;, title=&quot;Affidavit of Indigency&quot; enabled=True)
+  - affidavit_of_indigency: ALDocument.using(filename="affidavit-of-indigency.pdf", title="Affidavit of Indigency", enabled=True)
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:

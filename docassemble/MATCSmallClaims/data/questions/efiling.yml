@@ -1,0 +1,112 @@
+---
+include:
+  - docassemble.EFSPIntegration:efiling_integration.yml
+---
+code: |
+  jurisdiction_id = 'massachusetts'
+---
+code: |
+  proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
+---
+code: |
+  # Can be filed in District Court, BMC, and Housing Court.
+  efile_case_category_filters = ['Small Claims']
+
+  # This value will be selected if there's an ambiguous match.
+  efile_case_category_default = '5990'
+  efile_case_category_exclude = None
+
+
+
+  if defendant_owes_amount > 5000:
+    efile_case_type_filters = ['Small Claim over $5000']
+  elif 2000 < defendant_owes_amount <= 5000:
+    efile_case_type_filters = ['Small Claim $2001 - $5000']
+  elif 500 < defendant_owes_amount <= 2000:
+    efile_case_type_filters = ['Small Claim $501 - $2000']
+  else:
+    efile_case_type_filters = ['Small Claims $500 or less']
+
+
+  # Not defining. Could become out of sync.
+  # efile_case_type_default = ''  
+
+  efile_case_type_exclude = None
+---
+code: |
+  # These are explicit codes (as opposed to fuzzy matching).
+
+  # Description: "Exhibit or document for inclusion in Small Claims Case filed :"
+  exhibit_attachment.filing_type = '6165'
+
+  # Description: "Public"
+  exhibit_attachment.document_type = '6020' 
+
+  # Description: "Lead Document"
+  exhibit_attachment.filing_component = '332' 
+  exhibit_attachment.filing_action = 'efile'
+  exhibit_attachment.completed = True
+
+  # instanceName is sometimes known as "intrinsicName"
+  exhibit_attachment.filing_parties = [user.instanceName for user in users]
+
+---
+# This is more of a search
+code: |
+  affidavitofindigency_attachment.filing_type_filters = ['Indigency Affidavit']
+  affidavitofindigency_attachment.filing_type_default = '8411'
+---
+code: |
+  affidavitofindigency_attachment.document_type_filters = ['impounded']
+
+  # Code for "impounded". All fee waivers are impounded by default.
+  affidavitofindigency_attachment.document_type_default = "6587"
+---
+
+# [small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment]
+
+---
+code: |
+  # Description: Statement of Small Claims entered through e-file process
+  small_claims_attachment.filing_type = '6143'
+
+  # Description: "Public"
+  small_claims_attachment.document_type = '6020'
+  small_claims_attachment.filing_component = ''
+  small_claims_attachment.filing_action = 'efile'
+  small_claims_attachment.completed = True
+  small_claims_attachment.filing_parties = [user.instanceName for user in users]
+
+
+---
+code: |
+  users[i].party_type_filters = ['Defendant/Appellant', 'Defendant/Petitioner']
+  users[i].party_type_default = '1729'
+  users[i].party_type_exclude = None
+---
+code: |
+  other_parties[i].party_type_filters = ['Plaintiff/Appellee', 'Plaintiff/Respondent']
+  other_parties[i].party_type_default = '1736'
+  other_parties[i].party_type_exclude = None
+
+---
+id: user-wants-efile
+question: |
+  Do you want to e-file this document directly with the court?
+subquestion: |
+  You are able to electronically-file (e-file) this document with the Appeals Court!
+  This means you don't have to print out the document. The court
+  will communicate with you through your email or phone.
+
+  You will have to use your eFileMA account to e-file this document. 
+  If you don't wish to use your account or don't wish to make an account,
+  you can choose not to efile.
+
+  If you have not yet asked for a Stay in the Housing Court, you will still
+  need to manually print out and deliver the Notice of Appeal to the Housing Court.
+  **The Notice of Appeal cannot be e-filed.**
+
+  If you don't have a eFileMA account, you can make one in the next screens.
+fields:
+  - Do you want to e-file?: user_wants_efile
+    datatype: yesnoradio
