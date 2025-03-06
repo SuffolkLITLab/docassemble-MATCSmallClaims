@@ -358,6 +358,8 @@ question: |
   % else:
   What is ${ users[i] }'s address?
   % endif
+subquestion: |
+  Be sure to include a house or building number in your street address.
 fields:
   - label: |
       % if i > 0 and al_person_answering == "user":
@@ -388,6 +390,11 @@ fields:
     default: ${ AL_DEFAULT_STATE }
   - ${ users[i].address.zip_label}: users[i].address.zip
     required: True
+validation code: |
+  for key in ['address']:
+    if hasattr(users[i].address, key) and getattr(users[i].address, key) is not None:
+      if not any(char.isdigit() for char in str(getattr(users[i].address, key))):
+        validation_error("Include at least one number in your street address", field="users[i].address.address")
 ---
 template: why_contact_info_needed_template
 subject: |
