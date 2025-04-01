@@ -11,7 +11,7 @@ metadata:
   short title: >-
     Small Claims
   description: |-
-    This interview helps a Massachusetts plaintiff file a notice of their small claim with the court.
+    This interview helps a Massachusetts plaintiff file a small claim with the court.
   can_I_use_this_form: |
     If you are a plaintiff, you can use this interview to file a notice of your small claim with the court.
   before_you_start: |
@@ -56,7 +56,7 @@ code: |
   github_repo_name = 'docassemble-MATCSmallClaims'
 ---
 code: |
-  interview_short_title = "File for small claims"
+  interview_short_title = "File a small claim"
 ---
 code: |
   al_form_type = "starts_case"  
@@ -177,42 +177,45 @@ features:
 id: terms_and_privacy
 section: introduction
 question: |
-  Terms and privacy policy
+  CourtFormsOnline: File a Small Claim
 subquestion: |
 
-  This site does not provide legal advice.  
-  If you need a lawyer, find your local [legal aid provider](https://www.mass.gov/legal-aid).  
+  Before you start the small claims interview, you must agree to the terms of use.
 
   ---
   
   ${ display_template(al_terms_of_use, scrollable=True) }
 
-  To continue, you must accept the terms of use.  
 fields:
-  - I accept the terms of use: acknowledged_information_use
+  - I agree to the terms of use: acknowledged_information_use
     datatype: yesnowide
     grid: 8
 validation code: |
   if not acknowledged_information_use:
-    validation_error("You must accept the terms of use to continue.", field="acknowledged_information_use")
+    validation_error("You must agree to the terms of use to continue.", field="acknowledged_information_use")
 continue button field: terms_accepted
 ---
+#################### Small Claims Interview Info #####################
 id: small_claims_interview_info
 continue button field: small_claims_intro
 question: |
-  Before you file a notice of small claim
+  Before you file a small claim
 subquestion: |
-  To file your notice of small claim, you will need to know:  
+  This site does not provide legal advice. If you need legal help, contact your local [legal aid provider](https://www.mass.gov/legal-aid).
 
-  - The full name of each person or business you're filing the claim against.  
-  - The reasons for your claim and how you calculated your claim amount.  
+  ---
+
+  To file your small claim, you will need to know:   
+
+  - The full name of each person or business you're filing the claim against
+  - The reasons for your claim and how you calculated your claim amount
   - The military status of the people on the other side of your claim,  
-    to confirm that they are not on active duty while the claim is being decided.  
+    to confirm that they are not on active duty while the claim is being decided
 
   When you finish the interview, you can:
   
   - File your claim electronically, or  
-  - Download and print your forms to bring to the court in person.  
+  - Download and print your forms to bring to the court in person 
 
   Most people take about 30 minutes to complete this interview.
 ---
@@ -221,7 +224,7 @@ continue button field: filing_fee_acknowledged
 question: |
   Filing fees for small claims
 subquestion: |
-  To file a notice of small claim, you must pay a filing fee based on the amount of your claim. If you cannot afford the filing fee, you can use this interview to ask the court if you may file your small claim for free.
+  To file a small claim, you must also pay a filing fee based on the amount of your claim. If you cannot afford the filing fee, you can use this interview to ask the court if you may file your small claim for free.
 
   Amount of your claim | Filing fee
   ---------------------|-----------  
@@ -254,7 +257,7 @@ fields:
       - No: user
     label above field: True
     under text: |
-      If you are an attorney, but you are filing this claim on your own behalf, select No.
+      If you are an attorney, but you are filing this claim on your own behalf, select "No."
 ---
 id: attorney information
 sets:
@@ -345,10 +348,10 @@ fields:
     label: Middle name
     required: False
   - field: users[i].name.last
-    label: Last Name
+    label: Last name
     required: True
   - field: users[i].name.suffix
-    label: Suffix (Jr., Sr., etc.)
+    label: Suffix (such as Jr., Sr., or III; leave blank if none)
     required: False
 ---
 id: plaintiff's address
@@ -400,9 +403,7 @@ template: why_contact_info_needed_template
 subject: |
   Why do I need to give my contact information?
 content: | 
-  It is important that the person or organization you deliver this form to
-  is able to contact you. Make sure to include at least one way to reach you
-  other than by mail.
+  The court needs to be able to communicate with you about your claim. Make sure to include at least one way to reach you other than by mail.
 ---
 id: first plaintiff's contact information
 question: |
@@ -429,7 +430,7 @@ fields:
     input type: area
     required: False
     help: |
-      If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you the message.
+      If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you updates from the court.
 validation code: |
   if (not showifdef('users[0].phone_number') and \
       (not showifdef('users[0].mobile_number')) and \
@@ -452,7 +453,7 @@ fields:
     input type: area
     required: False
     help: |
-      If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you the message.
+       If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you updates from the court.
 validation code: |
   if (not showifdef('users[i].phone_number') and \
       (not showifdef('users[i].mobile_number')) and \
@@ -491,15 +492,15 @@ if: |
 id: choose a court (courts matching provided address were found)
 question: |
   % if al_form_type == 'starts_case':
-  What court do you want to file in?
+  Where do you want to file your claim?
   % elif al_form_type == 'appeal':
-  What is the name of the trial court your case was originally filed in?
+  In which trial court did you first file your claim?
   % else:
-  What court is your case in?
+  Where was your claim originally filed?
   % endif
 subquestion: |
   % if not al_form_type == 'starts_case':
-  Look at your court paperwork. Match the name listed there.
+  Find the court name on your documents and match it with the court name here.
   % endif
 
   % if len(all_matches) > 0:
@@ -544,7 +545,7 @@ content:  |
   The base amount you are suing for (including the value of property) must be $7,000 or 
   less. There are two exceptions:
   
-  1. If your claim is based on property damage from an automobile accident, then your claim amount can be more than $7,000.
+  1. If your claim is based on property damage from an automobile accident, then your claim amount may be more than $7,000.
   2. If you are suing for unfair and deceptive practices under [Mass. Gen. Laws ch. 93A](https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXV/Chapter93A) or under the security deposit statute, [Mass. Gen. Laws ch. 186, § 15B](https://malegislature.gov/Laws/GeneralLaws/PartII/TitleI/Chapter186/Section15B), the court may award additional damages above the $7,000 limit. However, the base amount of your claim still must be $7,000 or less.
 ---
 id: statement of claim
@@ -577,7 +578,7 @@ fields:
     datatype: radio
     choices:
       - My claim is based on property damage from an auto accident
-      - I am suing for unfair and deceptive practices under Chapter 93A or under the security deposit statute; the base amount of my claim is still $7,000 or less
+      - I am suing for unfair and deceptive practices under Chapter 93A or under the security deposit statute. The base amount of my claim is still $7,000 or less
     under text: ${ collapse_template(claims_greater_than_7000) } 
     js show if: |
       val("defendant_owes_amount") > 7000
@@ -657,11 +658,11 @@ content: |
 id: Tell us about a court
 question: |
   % if al_form_type == 'starts_case':
-  What court do you want to file in?
+  Where do you want to file your claim?
   % elif al_form_type == 'appeal':
-  What is the name of the trial court your case was originally filed in?
+  In which trial court was your claim first filed?
   % else:
-  What court is your case in?
+  Where is your claim filed?
   % endif
 subquestion: |
   % if not al_form_type == 'starts_case':
@@ -670,15 +671,15 @@ subquestion: |
   
   ${ collapse_template(how_to_pick_court_help_template) }  
   
-  A small claim may be filed in one of three different court departments: District Court, Boston Municipal Court or Housing Court.
+  You can file a small claim in one of three departments, including the District Court, Boston Municipal Court, or Housing Court.
 
-  You may bring a small claim in a District or Boston Municipal Court where:
+  You may file your small claim in a District or Boston Municipal Court where:
   - at least one plaintiff lives, works, or has a place of business or
   - at least one defendant lives, works, or has a place of business or
-  - the rental property is located (if you are filing a claim about a landlord-tenant issue).
+  - the rental property is located, if your claim is for a landlord-tenant issue.
 
-  You may bring a small claim in a Housing Court where:
-  - the rental property is located (if you are filing a claim about a landlord-tenant issue).
+  You may file your small claim in a Housing Court where:
+  - the rental property is located, if your claim is for a landlord-tenant issue.
 ---
 sets:
   - other_parties[i].name.first
@@ -736,7 +737,8 @@ fields:
       variable: other_parties[i].person_type
       is: person
 
-  - Suffix: other_parties[i].name.suffix
+  - field: other_parties[i].name.suffix
+    label: Suffix (such as Jr., Sr., or III; leave blank if none)
     required: False
     show if: 
       variable: other_parties[i].person_type
@@ -921,7 +923,7 @@ review:
       ${ currency(defendant_owes_amount) }
   - Edit: exhibit_attachment.exhibits.has_exhibits
     button: |
-      **Exhibits attached?**
+      **Are the exhibits attached?**
       
       % if exhibit_attachment.exhibits.has_exhibits:
       Yes
@@ -934,7 +936,7 @@ review:
       % if exhibit_attachment.exhibits.there_are_any:
       ${ exhibit_attachment.exhibits.in_progress_exhibits }
       % else:
-      You have not attached any exhibits yet
+      You have not attached any exhibits yet.
       % endif
 
       ${ exhibit_attachment.exhibits.add_action() }
@@ -942,7 +944,7 @@ review:
     show if: exhibit_attachment.exhibits.has_exhibits
   - Edit: is_willing_mediation
     button: |
-      **Willing to mediate?** 
+      **Are you willing to mediate?** 
       % if is_willing_mediation == True:
       Yes
       % else:
@@ -1052,9 +1054,9 @@ event: small_claims_download
 question: |
   All done
 subquestion: |
-  Thank you ${users}. Your form is ready to download and deliver.
+  Thank you, ${users}. Your form is ready to download and deliver.
   
-  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+  View, download, and send your form below. Click the "Edit answers" button to fix any mistakes.
 
   ${ action_button_html(url_action('review_small_claims'), label='Edit answers', color='info') }
   
