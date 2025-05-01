@@ -231,7 +231,7 @@ subquestion: |
   $500 or less         | $40  
   $501–2,000           | $50  
   $2,001–5,000         | $100  
-  $5,001 or more       | $150  
+  $5,001–7,000         | $150  
 ---
 id: is_user_an_attorney
 question: | 
@@ -414,7 +414,7 @@ question: |
   % endif
 subquestion: |
   % if al_person_answering == "user":
-  Include at least **one** way to reach you other than by mail.
+  Include at least one way to reach you other than by mail.
   
   ${ collapse_template(why_contact_info_needed_template) }
   % else:
@@ -651,7 +651,7 @@ fields:
 template: mediation_template
 subject: What is mediation?
 content: |
- - Mediation is a way to settle your small claim without going to court.
+ - Mediation is a way to settle your small claim without going to trial.
  - During mediation, the parties in a lawsuit sit down with a neutral person, called a mediator, to talk out a solution to their legal problem.
  - If you try mediation and it doesn't resolve your claim, you may still take your claim to trial later.
 ---
