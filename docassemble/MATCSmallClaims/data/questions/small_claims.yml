@@ -147,6 +147,7 @@ code: |
     is_indigent
     set_fee_waiver_defaults
 
+  users[0].signature
   nav.set_section("review_small_claims")
   users[0].states_above_true
   interview_order_small_claims = True
@@ -308,11 +309,16 @@ question: |
   % else:
   What is ${ attorneys[i].name }'s contact information?
   % endif
+subquestion: |
+  Providing an email address is optional, **but recommended**. It helps the court reach you more quickly and can speed up your case.
 fields:
   - Phone: attorneys[i].phone_number
-    required: True
+    required: False
   - Email: attorneys[i].email_address
     required: False
+validation code: |
+ if not attorneys[i].email_address and not attorneys[i].phone_number:
+    validation_error("Please provide at least one contact method: email or phone number.")
 ---
 generic object: ALPeopleList
 id: additional attorneys 
@@ -414,11 +420,11 @@ question: |
   % endif
 subquestion: |
   % if al_person_answering == "user":
-  Include at least one way to reach you other than by mail.
+  Include at least one way to reach you other than by mail. Providing an email address is optional, **but recommended**.
   
   ${ collapse_template(why_contact_info_needed_template) }
   % else:
-  Include at least **one** way to reach ${ users[0] } other than by mail.
+  Include at least **one** way to reach ${ users[0] } other than by mail. Providing an email address is optional, **but recommended**.
   % endif
 fields:  
   - Phone number: users[0].phone_number
@@ -429,7 +435,7 @@ fields:
   - Other ways to reach you: users[0].other_contact_method
     input type: area
     required: False
-    help: |
+    note: |
       If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you updates from the court.
 validation code: |
   if (not showifdef('users[0].phone_number') and \
@@ -442,7 +448,7 @@ id: additional plaintiff's contact information
 question: |
   What is ${ users[i] }'s contact information?
 subquestion: |
-  Include at least **one** way to reach ${ users[i] } other than by mail.
+  Include at least **one** way to reach ${ users[i] } other than by mail. Providing an email address is optional, **but recommended**.
 fields:  
   - Phone number: users[i].phone_number
     required: False
@@ -452,7 +458,7 @@ fields:
   - Other ways to reach you: users[i].other_contact_method
     input type: area
     required: False
-    help: |
+    note: |
        If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you updates from the court.
 validation code: |
   if (not showifdef('users[i].phone_number') and \
@@ -757,12 +763,20 @@ id: opposing_parties_contact_information
 question: |
   What is ${other_parties[i]}'s contact information?
 subquestion: |  
+  Providing an email address is optional, **but recommended**. It helps the court reach the parties more quickly and can speed up your case.
+  
   ${collapse_template(defendant_contact_template)}
 fields:
   - Phone: other_parties[i].phone_number
     required: False
   - Email: other_parties[i].email_address
     required: False
+  - Other ways to reach them: other_parties[i].other_contact_method
+    input type: area
+    required: False
+validation code: |
+  if not other_parties[i].email_address and not other_parties[i].phone_number:
+      validation_error("Please provide at least one contact method: email or phone number.")  
 ---
 template: defendant_contact_template
 subject: What if I don't know the defendant's contact information?
@@ -841,7 +855,7 @@ code: |
 
 ---
 code: |
-  signature_fields = ['users[0].signature'] 
+  user_signature = ['users[0].signature'] 
 ---
 id: preview small_claims
 question: |

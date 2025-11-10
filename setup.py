@@ -46,15 +46,14 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
 setup(name='docassemble.MATCSmallClaims',
       version='1.0',
       description=('Massachusetts small claims complaint'),
-      long_description='# docassemble.SmallClaims\r\n\r\nSmall Claims\r\n\r\n## Authors\r\n\r\nNava Ebadollahi\r\nMark Marotta\r\nNicole Dimitri\r\nSam Glover\r\nAry Ascencio',
+      long_description='# docassemble.SmallClaims\r\n\r\nSmall Claims\r\n\r\n## Authors\r\n\r\nNava Ebadollahi\r\nMark Marotta\r\nNicole Dimitri\r\nSam Glover\r\nAry Ascencio\r\n\r\n### Transfer Memo 2025\r\n[2024–25 Project Transfer Memo](handoff/transfer_memo_2025.md)\r\n',
       long_description_content_type='text/markdown',
       author='Suffolk Legal Innovation & Technology Lab (LIT Lab)',
       author_email='litlab@suffolk.edu',
-      license='MIT License',
+      license='MIT',
       url='https://courtformsonline.org',
       packages=find_namespace_packages(),
-      install_requires=['docassemble.AssemblyLine>=3.2.0'],
+      install_requires=['docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/MATCSmallClaims/', package='docassemble.MATCSmallClaims'),
      )
-
