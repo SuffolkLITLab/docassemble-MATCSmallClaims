@@ -202,7 +202,7 @@ continue button field: small_claims_intro
 question: |
   Before you file a small claim
 subquestion: |
-  This site does not provide legal advice. If you need legal help, contact your local [legal aid provider](https://www.mass.gov/legal-aid).
+  This site does not provide legal advice. If you need legal help, contact your local [legal aid provider](https://www.mass.gov/info-details/finding-legal-help).
 
   ---
 
@@ -233,20 +233,7 @@ subquestion: |
   $501–2,000           | $50  
   $2,001–5,000         | $100  
   $5,001–7,000         | $150  
----
-id: is_user_an_attorney
-question: | 
-  Are you an attorney?
-fields:
-  - no label: al_person_answering
-    datatype: radio
-    choices: 
-      - Yes: attorney
-      - No: user
-    label above field: True
-    under text: |
-      If you are an attorney, but you are filing this claim on your own behalf, select No.
----
+--- 
 id: is user an attorney
 question: | 
   Are you an attorney?
@@ -521,7 +508,9 @@ subquestion: |
   ${map_of(combined_locations(all_matches))}
   % endif
   
-  ${ collapse_template(how_to_pick_court_help_template) }  
+  ${ collapse_template(how_to_pick_court_help_template) } 
+  ${ collapse_template(court_selection_help_template) }
+  ${ collapse_template(address_help_template)}
 fields:
   - no label: trial_court
     datatype: object_radio
@@ -543,6 +532,28 @@ fields:
     object labeler: court_short_label
     choices: all_courts.filter_courts(allowed_courts)
     css class: not-required-if-disabled
+---
+template: court_selection_help_template
+subject: How courts are chosen based on address
+content: |
+  - Massachusetts courts only serve Massachusetts addresses.
+  - The **District Court** or **Boston Municipal Court** may hear most small claims under $7,000 (except specific exceptions like 93A claims).
+  - The **Housing Court** hears landlord-tenant disputes and housing-related claims.
+  - If you are filing for multiple plaintiffs or multiple claim locations, the system will show all relevant courts.
+  - If the court you need is not listed, select **“None of the above”** and pick from the full court list.
+---
+template: address_help_template
+subject: Why we ask for your address
+content: |
+  - Your address helps determine which Massachusetts court can hear your case.
+  - Filing location usually depends on:
+    
+    1. The court must be in the **county where the defendant lives**, or  
+    2. Where the **claim or incident occurred**.
+
+  - Massachusetts courts **only hear cases involving Massachusetts residents or events in Massachusetts**.
+  - If your claim involves an **out-of-state defendant or incident**, you may need to file in another state.
+  - Always check your documents to see where your claim should be filed.
 ---
 template: claims_greater_than_7000
 subject:  |
