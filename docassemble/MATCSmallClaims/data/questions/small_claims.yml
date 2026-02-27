@@ -3,6 +3,7 @@ include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.MassAccess:massaccess.yml
   - docassemble.ALAffidavitOfIndigency:affidavit_body.yml
+  - docassemble.MATCMilitaryAffidavit:military_affidavit.yml
   - docassemble.MATCTheme:matc_theme.yml
 ---
 metadata:
@@ -35,7 +36,6 @@ metadata:
     - "Boston Municipal Court"
     - "Housing Court"
     - "District Court" 
-  typical_role: "plaintiff"
   al_weaver_version: "1.10.3"
   generated_on: "2024-06-05"
   languages:
@@ -61,12 +61,16 @@ code: |
 code: |
   al_form_type = "starts_case"  
 ---
+code: |
+  plaintiffs = users
+  defendants = other_parties
+---
 objects:
-  - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'phone_number'])
+  - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'email', 'phone_number'])
   - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
   - other_parties: ALPeopleList.using(
         there_are_any=True,
-        complete_attribute=['address.address', 'phone_number', 'military_status'])
+        complete_attribute=['address.address', 'phone_number', 'email', 'military_status'])
   - exhibit_attachment: ALExhibitDocument.using(
           title="Exhibits",
           filename="exhibits",
@@ -133,14 +137,14 @@ code: |
   trial_court.department
 
   nav.set_section("claim_details")
-  reason_for_suing_defendant
-  defendant_owes_amount
-  filing_fee
+  claim_description
+  claim_amount
+  court_costs_amount
   if exhibit_attachment.exhibits.has_exhibits:
     exhibit_attachment.exhibits.gather()
 
   nav.set_section("mediation")
-  is_willing_mediation
+  plaintiffs1_willing_to_mediate
   trial_court
   set_progress(56)
 
@@ -249,6 +253,9 @@ fields:
     under text: |
       If you are an attorney, but you are filing this claim on your own behalf, select "No."
 ---
+# code: |
+#  user_ask_role = 'plaintiff'
+--- 
 id: attorney information
 sets:
   - attorneys[i].name.first
@@ -260,7 +267,7 @@ question: |
   % if i == 0:
   What is your name?
   % else:
-  Name of the first ${ noun_plural(attorneys.object_name(), 1) }
+  Name of the ${ ordinal(i) } ${ noun_plural(attorneys.object_name(), 1) }
   % endif
 fields:
   - code: |
@@ -303,10 +310,10 @@ subquestion: |
 fields:
   - Phone: attorneys[i].phone_number
     required: False
-  - Email: attorneys[i].email_address
+  - Email: attorneys[i].email
     required: False
 validation code: |
- if not attorneys[i].email_address and not attorneys[i].phone_number:
+ if not attorneys[i].email and not attorneys[i].phone_number:
     validation_error("Please provide at least one contact method: email or phone number.")
 ---
 generic object: ALPeopleList
@@ -332,7 +339,7 @@ question: |
     % if al_person_answering == "attorney":
     What is the ${ ordinal(i) } plaintiff's name?
     % else:
-    What is the name of the ${ ordinal_number(i) } plaintiff?
+    What is the name of the ${ ordinal_number(i + 1) } plaintiff?
     % endif
   % endif
 fields:
@@ -581,7 +588,7 @@ subquestion: |
 
   You will be able to attach supporting documents on the next screen.
 fields:
-  - Reason for your claim: reason_for_suing_defendant
+  - Reason for your claim: claim_description
     input type: area
     rows: 10
     label above field: True
@@ -589,73 +596,56 @@ fields:
 id: claim amount
 question: |
   How much money does the defendant owe you in this case?
-fields: 
-  - Amount owed: defendant_owes_amount
-    datatype: currency
+fields:
+  - Amount owed: claim_amount
+#    datatype: currency
     min: 0
   - "Your claim is for more than $7,000": reason_pexceeds_7000
     datatype: radio
     choices:
       - My claim is based on property damage from an auto accident
       - I am suing for unfair and deceptive practices under Chapter 93A or under the security deposit statute. The base amount of my claim is still $7,000 or less
-    under text: ${ collapse_template(claims_greater_than_7000) } 
     js show if: |
-      val("defendant_owes_amount") > 7000
-  - Filing fee: filing_fee
-    datatype: currency
+      val("claim_amount") > 7000
+  - Filing fee: court_costs_amount
+ #   datatype: currency
     input type: hidden
-    min: 0
   - html: |
       <div class="da-container row">
-        <span for="filing_fee_display" class="col-md-4 datext-right">Filing fee</span>
+        <span for="court_costs_amount_display" class="col-md-4 datext-right">Filing fee</span>
         <span class="col-md-8" aria-live="polite">
-          $<span id="filing_fee_display">--</span>
+          $<span id="court_costs_amount_display">--</span>
         </span>
       </div>
 script: |
   <script>
     const fees = [
-      {
-        min: 0,
-        max: 500,
-        fee: 40,
-      },
-      {
-        min: 501,
-        max: 2000,
-        fee: 50,
-      },
-      {
-        min: 2001,
-        max: 5000,
-        fee: 100,
-      },
-      {
-        min: 5001,
-        max: "none",
-        fee: 150,
-      }
+      { min: 0,    max: 500,  fee: 40 },
+      { min: 501,  max: 2000, fee: 50 },
+      { min: 2001, max: 5000, fee: 100 },
+      { min: 5001, max: "none", fee: 150 }
     ];
-  
     function getFilingFee() {
-      let claimAmount = val("defendant_owes_amount");
+      let claimAmount = val("claim_amount");
       if (!claimAmount) {
-        setField("filing_fee", null);
-        $("#filing_fee_display").text('--');
+        setField("court_costs_amount", null);
+        setField("court_costs_amount", null); // keep alias in sync
+        $("#court_costs_amount_display").text('--');
         return;
       }
       fees.forEach((el) => {
         if (claimAmount >= el.min && (claimAmount <= el.max || el.max === "none")) {
-          setField("filing_fee", el.fee);
-          $("#filing_fee_display").text(el.fee);
+          setField("court_costs_amount", el.fee);
+          setField("court_costs_amount", el.fee); // keep alias in sync
+          $("#court_costs_amount_display").text(el.fee);
         }
       });
     }
-    if ($(getField("defendant_owes_amount")).val()) {
+    if ($(getField("claim_amount")).val()) {
       getFilingFee();
     }
-    $(getField("defendant_owes_amount")).on("change", getFilingFee);
-  </script>  
+    $(getField("claim_amount")).on("change", getFilingFee);
+  </script> 
 ---
 id: mediation_question
 mandatory: True
@@ -664,7 +654,7 @@ question: |
 subquestion: |  
  ${collapse_template(mediation_template)}
 fields:
-  - "Would you like to try mediation?": is_willing_mediation
+  - "Would you like to try mediation?": plaintiffs1_willing_to_mediate
     datatype: yesnoradio
 ---
 template: mediation_template
@@ -673,32 +663,7 @@ content: |
  - Mediation is a way to settle your small claim without going to trial.
  - During mediation, the parties in a lawsuit sit down with a neutral person, called a mediator, to talk out a solution to their legal problem.
  - If you try mediation and it doesn't resolve your claim, you may still take your claim to trial later.
----
-id: Tell us about a court
-question: |
-  % if al_form_type == 'starts_case':
-  Where do you want to file your claim?
-  % elif al_form_type == 'appeal':
-  In which trial court was your claim first filed?
-  % else:
-  Where is your claim filed?
-  % endif
-subquestion: |
-  % if not al_form_type == 'starts_case':
-  Look at your court paperwork. Match the name listed there.
-  % endif
-  
-  ${ collapse_template(how_to_pick_court_help_template) }  
-  
-  You can file a small claim in one of three departments, including the District Court, Boston Municipal Court, or Housing Court.
 
-  You may file your small claim in a District or Boston Municipal Court where:
-  - at least one plaintiff lives, works, or has a place of business or
-  - at least one defendant lives, works, or has a place of business or
-  - the rental property is located, if your claim is for a landlord-tenant issue.
-
-  You may file your small claim in a Housing Court where:
-  - the rental property is located, if your claim is for a landlord-tenant issue.
 ---
 sets:
   - other_parties[i].name.first
@@ -782,13 +747,13 @@ subquestion: |
 fields:
   - Phone: other_parties[i].phone_number
     required: False
-  - Email: other_parties[i].email_address
+  - Email: other_parties[i].email
     required: False
   - Other ways to reach them: other_parties[i].other_contact_method
     input type: area
     required: False
 validation code: |
-  if not other_parties[i].email_address and not other_parties[i].phone_number:
+  if not other_parties[i].email and not other_parties[i].phone_number:
       validation_error("Please provide at least one contact method: email or phone number.")  
 ---
 template: defendant_contact_template
@@ -848,7 +813,7 @@ id: wants_fee_waiver
 question: |
   Fee waiver eligibility
 subquestion: |
-  Based on the amount of your claim, the filing fee will be ${ currency(filing_fee) }. 
+  Based on the amount of your claim, the filing fee will be ${ currency(court_costs_amount) }. 
   
   However, if you earn under a certain amount, you can ask the court to help you pay the filing fee.
   
@@ -861,7 +826,7 @@ code: |
 ---
 code: |
   fees['Filing fee'].waive = True
-  fees['Filing fee'].amount= filing_fee 
+  fees['Filing fee'].amount= court_costs_amount
   set_fee_waiver_defaults = True
 ---
 code: |
@@ -941,14 +906,14 @@ review:
     button: |
       **Court:**
       ${ trial_court }
-  - Edit: reason_for_suing_defendant
+  - Edit: claim_description
     button: |
       **Statement of claim:**
-      > ${ single_paragraph(reason_for_suing_defendant) }
-  - Edit: defendant_owes_amount
+      > ${ single_paragraph(claim_description) }
+  - Edit: claim_amount
     button: |
       **Amount of claim:** 
-      ${ currency(defendant_owes_amount) }
+      ${ currency(claim_amount) }
   - Edit: exhibit_attachment.exhibits.has_exhibits
     button: |
       **Are the exhibits attached?**
@@ -970,10 +935,10 @@ review:
       ${ exhibit_attachment.exhibits.add_action() }
     css class: bg-secondary-subtle
     show if: exhibit_attachment.exhibits.has_exhibits
-  - Edit: is_willing_mediation
+  - Edit: plaintiffs1_willing_to_mediate
     button: |
       **Are you willing to mediate?** 
-      % if is_willing_mediation == True:
+      % if plaintiffs1_willing_to_mediate == True:
       Yes
       % else:
       No
@@ -985,7 +950,7 @@ review:
   - Edit: user_signature
     button: |
       **Signature:**
-      ${ users[0].signature }
+      ${ plaintiffs[0].signature }
   - Edit: signature_date
     button: |
       **Date of signature:**
@@ -1098,13 +1063,13 @@ progress: 100
 # ALDocument objects specify the metadata for each template
 objects:
   - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
-  - small_claims_attachment: ALDocument.using(title="Small claims", filename="small_claims", enabled=True, has_addendum=False, )
+  - small_claims_attachment: ALDocument.using(title="Small claims", filename="SmallClaims26Printed.pdf", enabled=True, has_addendum=False, )
   - affidavit_of_indigency: ALDocument.using(filename=&quot;affidavit-of-indigency.pdf&quot;, title=&quot;Affidavit of Indigency&quot; enabled=True)
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims", title="All forms to deliver to court", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims26.pdf", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims26.pdf", title="All forms to deliver to court", enabled=True)
 ---
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
@@ -1119,51 +1084,72 @@ attachment:
 ---
 attachment:
   name: small claims
-  filename: small_claims
+  filename: small_claims26.pdf
   variable name: small_claims_attachment[i]
   skip undefined: True
-  pdf template file: small_claims.pdf
+  pdf template file: SmallClaims26Printed.pdf
   fields:
-      - "bmc": |
-             ${ trial_court.department == "Boston Municipal Court"  }
-      - "district": |
-             ${ trial_court.department == "District Court" } 
-      - "housing": |
-             ${ trial_court.department == "Housing Court" }
-      - "court_division": ${ trial_court.division }
-      - "attorney_name": ${ attorneys[0] }
-      - "user_name": ${ users[0] }
-      - "attorney_address_line_one": ${ attorneys[0].address.line_one() }
-      - "user_address_line_one": ${ users[0].address.line_one() }
-      - "user_address_line_two": ${ users[0].address.line_two() }
-      - "attorney_address_line_two": ${ attorneys[0].address.line_two() }
-      - "user_phone_number": ${ users[0].phone_number }
-      - "user_name_business": ${ users[0].name_business }
-      - "attorney_phone_number": ${ attorneys[0].phone_number }
-      - "bbo_number": ${ attorneys[0].bbo_number }
-      - "defendant1_name": ${ defendants[0] }
-      - "defendant2_name": ${ defendants[1] }
-      - "defendant1_address_line_one": ${ defendants[0].address.line_one() }
-      - "defendant2_address_line_one": ${ defendants[1].address.line_one() }
-      - "defendant2_address_line_two": ${ defendants[1].address.line_two() }
-      - "defendant1_address_line_two": ${ defendants[0].address.line_two() }
-      - "defendant1_phone_number": ${ defendants[0].phone_number }
-      - "defendant2_phone_number": ${ defendants[1].phone_number }
-      - "reason_for_suing_defendant": ${ reason_for_suing_defendant }
-      - "defendant_owes_amount": ${ currency(defendant_owes_amount) }
-      - "defendant_court_costs_amount": ${ currency(filing_fee) }
-      - "signature_date": ${ signature_date }
-      - "user_signature": ${ users[0].signature }
-      - "is_willing_mediation_yes": ${ is_willing_mediation }
-      - "is_willing_mediation_no": ${ not is_willing_mediation }
-      - "not_current_military_defendant": ${ defendants.filter(military_status = False) }
-      - "not_current_military": ${ any([person.military_status == False for person in defendants])}
-      - "current_military_defendant": ${ defendants.filter(military_status = True) }
-      - "unknown_current_military": ${ any([person.military_status is None for person in defendants])}
-      - "is_current_military": ${ any([person.military_status for person in defendants])}
+    - "bmc": ${ trial_court.department == "Boston Municipal Court" }
+    - "district": ${ trial_court.department == "District Court" }
+    - "housing": ${ trial_court.department == "Housing Court" }
 
-    #  - "military_affidavit_facts": ${ other_parties[0].military_affidavit_facts + ";" + other_parties[1].military_affidavit_facts }
-      - "military_affidavit_facts": |
-          ${ "; ".join([person.military_affidavit_facts for person in other_parties]) }
-      - "user_is_defendant": ${ al_person_answering == "defendant" }
-      - "user_is_attorney": ${ al_person_answering == "attorney" }
+    - "bmc_court_division": |
+        ${ trial_court.division if trial_court.department == "Boston Municipal Court" else "" }
+    - "district_court_division": |
+        ${ trial_court.division if trial_court.department == "District Court" else "" }
+    - "housing_court_division": |
+        ${ trial_court.division if trial_court.department == "Housing Court" else "" }
+
+    - "users1_name_full": ${ users[0] }
+    - "users1_address_on_one_line": ${ users[0].address.on_one_line() }
+    - "users1_phone_number": ${ users[0].phone_number }
+    - "users1_email": ${ users[0].email if defined("users[0].email") else "" }
+    - "users1_signature": ${ users[0].signature }
+
+    - "users2_name_full": ${ users[1] if users.number_gathered() > 1 else "" }
+    - "users2_address_on_one_line": |
+        ${ users[1].address.on_one_line() if users.number_gathered() > 1 else "" }
+    - "users2_phone_number": ${ users[1].phone_number if users.number_gathered() > 1 else "" }
+    - "users2_email": |
+        ${ users[1].email if users.number_gathered() > 1 and defined("users[1].email") else "" }
+
+    - "attorney1_name_full": ${ attorneys[0] if attorneys.number_gathered() > 0 else "" }
+    - "attorney1_address.on_one_line": |
+        ${ attorneys[0].address.on_one_line() if attorneys.number_gathered() > 0 else "" }
+    - "attorney1_phone_number": ${ attorneys[0].phone_number if attorneys.number_gathered() > 0 else "" }
+    - "attorney1_email": |
+        ${ attorneys[0].email if attorneys.number_gathered() > 0 and defined("attorneys[0].email") else "" }
+    - "attorney1_bbo": ${ attorneys[0].bbo_number if attorneys.number_gathered() > 0 else "" }
+
+    - "attorney2_name_full": ${ attorneys[1] if attorneys.number_gathered() > 1 else "" }
+    - "attorney2_addressone_one_line": |
+        ${ attorneys[1].address.on_one_line() if attorneys.number_gathered() > 1 else "" }
+    - "attorney2_phone_number": ${ attorneys[1].phone_number if attorneys.number_gathered() > 1 else "" }
+    - "attorney2_email": |
+        ${ attorneys[1].email if attorneys.number_gathered() > 1 and defined("attorneys[1].email") else "" }
+    - "attorney2_bbo": ${ attorneys[1].bbo_number if attorneys.number_gathered() > 1 else "" }
+
+    - "other_parties1_name_on_one_line": ${ other_parties[0] }
+    - "other_parties1_address_on_one_line": ${ other_parties[0].address.on_one_line() }
+    - "other_parties1_phone_number": ${ other_parties[0].phone_number }
+    - "other_parties1_email": |
+        ${ other_parties[0].email if defined("other_parties[0].email") else "" }
+
+    - "other_parties2_name_full": ${ other_parties[1] if other_parties.number_gathered() > 1 else "" }
+    - "other_parties2_address_on_one_line": |
+        ${ other_parties[1].address.on_one_line() if other_parties.number_gathered() > 1 else "" }
+    - "other_parties2_phone_number": |
+        ${ other_parties.item(1).phone_number }
+    - "other_parties2_email": |
+        ${ other_parties[1].email }
+    
+    - "claim_description": ${ claim_description }
+    - "claim_amount": ${ claim_amount }
+    - "court_costs_amount": ${ court_costs_amount }
+
+    - "users1_signature": ${ users[0].signature }
+    - "signature_date": ${ signature_date }
+
+    - "plaintiffs1_willing_to_mediate": ${ plaintiffs1_willing_to_mediate }
+
+    - "user_is_attorney": ${ al_person_answering == "attorney" }
