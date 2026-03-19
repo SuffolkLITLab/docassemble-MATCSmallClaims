@@ -70,7 +70,7 @@ objects:
   - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
   - other_parties: ALPeopleList.using(
         there_are_any=True,
-        complete_attribute=['address.address', 'phone_number', 'email', 'military_status'])
+        complete_attribute=['address.address', 'phone_number', 'email'])
   - exhibit_attachment: ALExhibitDocument.using(
           title="Exhibits",
           filename="exhibits",
@@ -102,6 +102,10 @@ code: |
   nav.set_section("required_info")
   small_claims_intro
   filing_fee_acknowledged
+  nav.set_section("wants_fee_waiver")
+  if wants_fee_waiver:
+    is_indigent
+    set_fee_waiver_defaults
 
   nav.set_section("plaintiff_info")
   al_person_answering
@@ -129,12 +133,7 @@ code: |
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
-  other_parties[0].military_status
-
-  nav.set_section("court_selection")
-  set_parts(subtitle=str(users))
-  set_progress(42)
-  trial_court.department
+  set_all_military_statuses
 
   nav.set_section("claim_details")
   claim_description
@@ -148,14 +147,15 @@ code: |
   trial_court
   set_progress(56)
 
-  nav.set_section("wants_fee_waiver")
-  if wants_fee_waiver:
-    is_indigent
-    set_fee_waiver_defaults
+  nav.set_section("court_selection")
+  set_parts(subtitle=str(users))
+  set_progress(42)
+  trial_court.department
 
   users[0].states_above_true
-  users[0].signature
   nav.set_section("review_small_claims")
+  small_claims_preview_question
+  users[0].signature
   interview_order_small_claims = True
 ---
 ###################### Main Order ######################
@@ -240,22 +240,32 @@ subquestion: |
   $2,001–5,000         | $100  
   $5,001–7,000         | $150  
 --- 
-id: is user an attorney
-question: | 
-  Are you an attorney?
-fields:
-  - no label: al_person_answering
-    datatype: radio
-    choices: 
-      - Yes: attorney
-      - No: user
-    label above field: True
-    under text: |
-      If you are an attorney, but you are filing this claim on your own behalf, select "No."
----
-# code: |
-#  user_ask_role = 'plaintiff'
+#id: is user an attorney
+#question: | 
+#  Are you an attorney?
+#fields:
+#  - no label: al_person_answering
+#    datatype: radio
+#    choices: 
+#      - Yes: attorney
+#      - No: user
+#    label above field: True
+#    under text: |
+#      If you are an attorney, but you are filing this claim on your own behalf, select "No."
 --- 
+id: User Type
+question: |
+  Who is filling out this form?
+fields:
+  - "I am": al_person_answering
+    datatype: radio
+    choices:
+      - Representing myself: user
+      - An attorney: attorney
+---
+code: |
+  user_role = al_person_answering
+---
 id: attorney information
 sets:
   - attorneys[i].name.first
@@ -580,13 +590,13 @@ subquestion: |
   Tell the court what happened and explain why you are suing the defendant as clearly as you can. 
   Be sure to include:
   
-  * The dates when the main events of your case took place, if you remember them
+  * The dates when the main events of your case happened, if you remember them
   * The amount of money you are asking the court to award you
   * How you determined the amount of money you are owed
 
   If a law allows you to ask the court to award double or triple the amount of money that you are owed, then you should also explain how the defendant harmed you and why the court should award you more money damages for that harm.
 
-  You will be able to attach supporting documents on the next screen.
+  You can able to attach supporting documents on the next screen.
 fields:
   - Reason for your claim: claim_description
     input type: area
@@ -761,45 +771,45 @@ subject: What if I don't know the defendant's contact information?
 content: |
   While you don’t have to know the defendant’s contact info right now, sharing it here can help the court process your case faster. If you don't know how to contact the defendant, leave this section blank.
 ---
-id: military_affidavit_question
-mandatory: True
-question: | 
-  % if other_parties.number() > 1:
-  Is ${other_parties[i]} in the military?
-  % else:
-  Is the defendant in the military?
-  % endif
-subquestion: |  
-  ${collapse_template(why_military_template)}  
-fields:
-  - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].military_status
-    datatype: yesnomaybe
-  - note: |
-      1. If you know the defendant’s **date of birth** or **social security number**, you can check their military status on the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you must send a copy of your search results to the court. The SRCA website will create this search results certificate for you.
+# id: military_affidavit_question
+# mandatory: True
+# question: | 
+#   % if other_parties.number() > 1:
+#   Is ${other_parties[i]} in the military?
+#   % else:
+#   Is the defendant in the military?
+#   % endif
+# subquestion: |  
+#   ${collapse_template(why_military_template)}  
+# fields:
+#   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].military_status
+#     datatype: yesnomaybe
+#   - note: |
+#       1. If you know the defendant’s **date of birth** or **social security number**, you can check their military status on the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you must send a copy of your search results to the court. The SRCA website will create this search results certificate for you.
       
-      2. If you don't use the SCRA Website, explain how else you know the defendant's military status. For example, you may know if the defendant is in the military just by talking with them. You can also write to a specific branch of the military, listed [here](https://www.defense.gov/Resources/Military-Departments/), to confirm whether the defendant is on active duty.
+#       2. If you don't use the SCRA Website, explain how else you know the defendant's military status. For example, you may know if the defendant is in the military just by talking with them. You can also write to a specific branch of the military, listed [here](https://www.defense.gov/Resources/Military-Departments/), to confirm whether the defendant is on active duty.
       
-      In either case, tell us about your search results or correspondences.
-    js show if: |
-      val("other_parties[i].military_status") === "None"
-  - "I still don't know": still_unsure
-    datatype: yesno
-    js show if: |
-      val("other_parties[i].military_status") === "None"
-  - "If yes, how do you know?": other_parties[i].military_affidavit_facts
-    input type: area
-    maxlength: 1395
-    show if:
-      variable: other_parties[i].military_status
-      is: True
-  - "Why don't you know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
-    input type: area
-    maxlength: 1395
-    js show if: | 
-      val("still_unsure") == true && val("other_parties[i].military_status") === "None"
-  - note: |
-      **Note:** the court may require you to post a bond or may issue other orders to protect the rights of any defendant on active military duty.
-    show if: still_unsure
+#       In either case, tell us about your search results or correspondences.
+#     js show if: |
+#       val("other_parties[i].military_status") === "None"
+#   - "I still don't know": still_unsure
+#     datatype: yesno
+#     js show if: |
+#       val("other_parties[i].military_status") === "None"
+#   - "If yes, how do you know?": other_parties[i].military_affidavit_facts
+#     input type: area
+#     maxlength: 1395
+#     show if:
+#       variable: other_parties[i].military_status
+#       is: True
+#   - "Why don't you know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
+#     input type: area
+#     maxlength: 1395
+#     js show if: | 
+#       val("still_unsure") == true && val("other_parties[i].military_status") === "None"
+#   - note: |
+#       **Note:** the court may require you to post a bond or may issue other orders to protect the rights of any defendant on active military duty.
+#     show if: still_unsure
 
 ---
 template: why_military_template
@@ -813,7 +823,7 @@ id: wants_fee_waiver
 question: |
   Fee waiver eligibility
 subquestion: |
-  Based on the amount of your claim, the filing fee will be ${ currency(court_costs_amount) }. 
+  Based on the amount of your claim, the filing fee is ${ currency(court_costs_amount) }. 
   
   However, if you earn under a certain amount, you can ask the court to help you pay the filing fee.
   
@@ -840,7 +850,7 @@ id: preview small_claims
 question: |
   Preview your form before you sign it
 subquestion: |
-  Here is a preview of the form you will sign on the next page.   
+  Here is a preview of the form you will **sign on the next page.**   
   
   ${ al_court_bundle.as_pdf(key='preview') }
 
