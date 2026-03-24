@@ -211,6 +211,11 @@ subquestion: |
   This site does not provide legal advice. If you need legal help, contact your local [legal aid provider](https://www.mass.gov/info-details/finding-legal-help).
 
   ---
+  Claims that can be brought as a small claim:
+  
+  - Unless your claim is for property damage from an automobile accident, it cannot be for more than $7,000. 
+  - In some cases (e.g., consumer protection cases or certain landlord/ tenant cases), the claim may be subject to statutory damages or attorney's fees of over $7,000. In those cases, the base amount cannot be more than $7,000, even though the potential award may be more than that amount.  
+  
 
   To file your small claim, you will need to know:   
 
@@ -265,6 +270,22 @@ fields:
 ---
 code: |
   user_role = al_person_answering
+---
+id: your name
+sets:
+    - users[0].name.first
+    - users[0].name.last
+    - users[0].name.middle
+    - users[0].name.suffix
+question:  |
+  % if user_role == "attorney":
+  What is your client's name?
+  % else:
+  What is your name?
+  % endif
+fields:
+  - code: |
+      users[0].name_fields()
 ---
 id: attorney information
 sets:
@@ -480,6 +501,10 @@ question: |
   % else:
   Is there anyone else on your side of the claim?
   % endif
+subquestion: |
+  % if len(other_parties.elements) > 0:  
+  So far, you have told us about ${comma_and_list(other_parties.complete_elements())}.
+  % endif
 fields:
   - no label: other_parties.there_is_another
     datatype: yesnoradio
@@ -587,11 +612,12 @@ content:  |
 id: statement of claim
 question: Explain what happened in your case
 subquestion: |
-  Tell the court what happened and explain why you are suing the defendant as clearly as you can. 
+  Tell the court what took place and explain why you are suing the defendant as clearly as you can. 
+  
   Be sure to include:
   
   * The dates when the main events of your case happened, if you remember them
-  * The amount of money you are asking the court to award you
+  * The amount of money you want the other party to give you
   * How you determined the amount of money you are owed
 
   If a law allows you to ask the court to award double or triple the amount of money that you are owed, then you should also explain how the defendant harmed you and why the court should award you more money damages for that harm.
@@ -618,7 +644,6 @@ fields:
     js show if: |
       val("claim_amount") > 7000
   - Filing fee: court_costs_amount
- #   datatype: currency
     input type: hidden
   - html: |
       <div class="da-container row">
@@ -770,46 +795,6 @@ template: defendant_contact_template
 subject: What if I don't know the defendant's contact information?
 content: |
   While you don’t have to know the defendant’s contact info right now, sharing it here can help the court process your case faster. If you don't know how to contact the defendant, leave this section blank.
----
-# id: military_affidavit_question
-# mandatory: True
-# question: | 
-#   % if other_parties.number() > 1:
-#   Is ${other_parties[i]} in the military?
-#   % else:
-#   Is the defendant in the military?
-#   % endif
-# subquestion: |  
-#   ${collapse_template(why_military_template)}  
-# fields:
-#   - "Does ${other_parties[i]} currently serve in the military?": other_parties[i].military_status
-#     datatype: yesnomaybe
-#   - note: |
-#       1. If you know the defendant’s **date of birth** or **social security number**, you can check their military status on the [SCRA Website](https://scra.dmdc.osd.mil/scra/#/home). If you use the SCRA Website, you must send a copy of your search results to the court. The SRCA website will create this search results certificate for you.
-      
-#       2. If you don't use the SCRA Website, explain how else you know the defendant's military status. For example, you may know if the defendant is in the military just by talking with them. You can also write to a specific branch of the military, listed [here](https://www.defense.gov/Resources/Military-Departments/), to confirm whether the defendant is on active duty.
-      
-#       In either case, tell us about your search results or correspondences.
-#     js show if: |
-#       val("other_parties[i].military_status") === "None"
-#   - "I still don't know": still_unsure
-#     datatype: yesno
-#     js show if: |
-#       val("other_parties[i].military_status") === "None"
-#   - "If yes, how do you know?": other_parties[i].military_affidavit_facts
-#     input type: area
-#     maxlength: 1395
-#     show if:
-#       variable: other_parties[i].military_status
-#       is: True
-#   - "Why don't you know ${other_parties[i]}'s military status?": other_parties[i].military_affidavit_facts
-#     input type: area
-#     maxlength: 1395
-#     js show if: | 
-#       val("still_unsure") == true && val("other_parties[i].military_status") === "None"
-#   - note: |
-#       **Note:** the court may require you to post a bond or may issue other orders to protect the rights of any defendant on active military duty.
-#     show if: still_unsure
 
 ---
 template: why_military_template
