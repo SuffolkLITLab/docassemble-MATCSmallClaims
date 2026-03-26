@@ -517,7 +517,7 @@ question: |
   Is there anyone else on your side of the case?
   % endif
 subquestion: |
-  % if len(users.elements) > 1:  
+  % if len(users.elements) > 0:  
   So far, you have told us about ${comma_and_list(users.complete_elements())}.
   % endif
 fields:
