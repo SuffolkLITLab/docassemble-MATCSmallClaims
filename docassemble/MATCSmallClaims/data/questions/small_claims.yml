@@ -622,7 +622,7 @@ subquestion: |
 
   If a law allows you to ask the court to award double or triple the amount of money that you are owed, then you should also explain how the defendant harmed you and why the court should award you more money damages for that harm.
 
-  You can able to attach supporting documents on the next screen.
+  You can attach supporting documents on the next screen.
 fields:
   - Reason for your claim: claim_description
     input type: area
