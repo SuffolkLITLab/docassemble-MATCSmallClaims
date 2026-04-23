@@ -82,12 +82,12 @@ objects:
 sections:
   - introduction: Getting started
   - required_info: Before you file
+  - wants_fee_waiver: Fee waiver
   - plaintiff_info: Plaintiff information
   - defendant_info: Defendant information
-  - court_selection: Court selection
   - claim_details: Your claim details
   - mediation: Mediation
-  - wants_fee_waiver: Fee waiver
+  - court_selection: Court selection
   - review_small_claims: Review your answers
   - download_small_claims: Download and file your claim
 ---
@@ -95,13 +95,13 @@ sections:
 id: interview_order_small_claims
 code: |
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court']
-
   nav.set_section("introduction")
   terms_accepted
   
   nav.set_section("required_info")
   small_claims_intro
   filing_fee_acknowledged
+  
   nav.set_section("wants_fee_waiver")
   if wants_fee_waiver:
     is_indigent
@@ -113,7 +113,7 @@ code: |
     attorneys.there_are_any = True
   else:
     attorneys.there_are_any = False
-
+  
   attorneys.gather()
   if attorneys.number_gathered() > 0:
     attorneys[0].bbo_number
@@ -134,6 +134,8 @@ code: |
   other_parties[0].address.address
   other_parties[0].phone_number
   set_all_military_statuses
+  if any([party.military_status == "unknown" for party in other_parties]):
+    bond_agreement_i_understand
 
   nav.set_section("claim_details")
   claim_description
@@ -144,12 +146,12 @@ code: |
 
   nav.set_section("mediation")
   plaintiffs1_willing_to_mediate
-  trial_court
   set_progress(56)
-
+  
   nav.set_section("court_selection")
   set_parts(subtitle=str(users))
-  set_progress(42)
+  set_progress(70)
+  trial_court
   trial_court.department
 
   users[0].states_above_true
@@ -184,7 +186,7 @@ features:
 id: terms_and_privacy
 section: introduction
 question: |
-  CourtFormsOnline: File a Small Claim
+  File a Statement of Small Claim
 subquestion: |
 
   Before you start the small claims interview, you must agree to the terms of use.
@@ -215,8 +217,20 @@ subquestion: |
   
   - Unless your claim is for property damage from an automobile accident, it cannot be for more than $7,000. 
   - In some cases (e.g., consumer protection cases or certain landlord/ tenant cases), the claim may be subject to statutory damages or attorney's fees of over $7,000. In those cases, the base amount cannot be more than $7,000, even though the potential award may be more than that amount.  
-  
 
+  A small claim may be filed in one of three different court departments: District Court, Boston Municipal Court, or Housing Court.
+
+  You may bring a small claim in a District or Boston Municipal Court where:
+  
+  - At least one plaintiff lives, works, or has a place of business **or**
+  - At least one defendant lives, works, or has a place of business **or**
+  - The rental property is located (if you are filing a claim about a landlord-tenant issue).
+
+  You may bring a small claim in a Housing Court where:
+  
+  - The rental property is located (if you are filing a claim about a landlord-tenant issue).
+  
+  
   To file your small claim, you will need to know:   
 
   - The full name of each person or business you're filing the claim against
@@ -236,7 +250,7 @@ continue button field: filing_fee_acknowledged
 question: |
   Filing fees for small claims
 subquestion: |
-  To file a small claim, you must also pay a filing fee based on the amount of your claim. If you cannot afford the filing fee, you can use this interview to ask the court if you may file your small claim for free.
+  To file a small claim, you must also pay a filing fee based on the amount of your claim. If you cannot afford the filing fee, you can use this interview to fill out a document requesting the court to determine if you may file your small claim for free.
 
   Amount of your claim | Filing fee
   ---------------------|-----------  
@@ -298,7 +312,7 @@ question: |
   % if i == 0:
   What is your name?
   % else:
-  Name of the ${ ordinal(i) } ${ noun_plural(attorneys.object_name(), 1) }
+  Name of the next attorney
   % endif
 fields:
   - code: |
@@ -342,7 +356,7 @@ fields:
   - Phone: attorneys[i].phone_number
     required: False
   - Email: attorneys[i].email
-    required: False
+    required: True
 validation code: |
  if not attorneys[i].email and not attorneys[i].phone_number:
     validation_error("Please provide at least one contact method: email or phone number.")
@@ -352,7 +366,7 @@ id: additional attorneys
 question: |
   Are there any other attorneys representing the plaintiff?
 subquestion: |
-  While it is not common to have more than one attorney in a small claim, you may list more than one. 
+  While it is not common to have more than one attorney on a small claims case, you may list more than one. 
 fields:
   - no label: attorneys.there_is_another
     datatype: yesnoradio
@@ -368,9 +382,9 @@ question: |
   What is your name?
   % else:
     % if al_person_answering == "attorney":
-    What is the ${ ordinal(i) } plaintiff's name?
+    What is the next plaintiff's name?
     % else:
-    What is the name of the ${ ordinal_number(i + 1) } plaintiff?
+    What is the name of the next plaintiff?
     % endif
   % endif
 fields:
@@ -438,7 +452,7 @@ subject: |
 content: | 
   The court needs to be able to communicate with you about your claim. Make sure to include at least one way to reach you other than by mail.
 ---
-id: first plaintiff's contact information
+id: plaintiff's contact information
 question: |
   % if al_person_answering == "user":
   What is your contact information?
@@ -446,13 +460,10 @@ question: |
   What is ${ users[0] }'s contact information?
   % endif
 subquestion: |
-  % if al_person_answering == "user":
-  Include at least one way to reach you other than by mail. Providing an email address is optional, **but recommended**.
-  
+ If you do not have a phone number or email address, write the phone number or email of someone who can reach you. Providing an email address is optional, **but recommended**.
+ 
   ${ collapse_template(why_contact_info_needed_template) }
-  % else:
-  Include at least **one** way to reach ${ users[0] } other than by mail. Providing an email address is optional, **but recommended**.
-  % endif
+ 
 fields:  
   - Phone number: users[0].phone_number
     required: False
@@ -462,8 +473,7 @@ fields:
   - Other ways to reach you: users[0].other_contact_method
     input type: area
     required: False
-    note: |
-      If you do not have a phone number or email address, explain how else the court can reach you. For example, you could use a friend's phone number, but the friend should be someone you can rely on to give you updates from the court.
+
 validation code: |
   if (not showifdef('users[0].phone_number') and \
       (not showifdef('users[0].mobile_number')) and \
@@ -497,24 +507,30 @@ validation code: |
 id: any other opposing parties
 question: |
   % if user_started_case:
-  Is there anyone else on the other side of your claim?
+  Are there any other defendants?
   % else:
-  Is there anyone else on your side of the claim?
+  Are there any other defendants?
   % endif
 subquestion: |
   % if len(other_parties.elements) > 0:  
   So far, you have told us about ${comma_and_list(other_parties.complete_elements())}.
   % endif
+
+  The person you are filing the case against is called the defendant. 
 fields:
   - no label: other_parties.there_is_another
     datatype: yesnoradio
 ---
-id: any other plaintiffs
+terms:
+  plaintiffs: |
+    The person filing this case is called the plaintiff. If someone else is filing the case with you, they would also be the plaintiff.
+
+---
 question: |
   % if al_person_answering == "attorney":
-  Are there any additional plaintiffs?
+  Are there any additional {plaintiffs} in this case?
   % else:
-  Is there anyone else on your side of the case?
+  Are there any additional {plaintiffs} in this case?
   % endif
 subquestion: |
   % if len(users.elements) > 0:  
@@ -612,7 +628,7 @@ content:  |
 id: statement of claim
 question: Explain what happened in your case
 subquestion: |
-  Tell the court what took place and explain why you are suing the defendant as clearly as you can. 
+  Explain what happened and why you are suing the defendant.  
   
   Be sure to include:
   
@@ -620,9 +636,9 @@ subquestion: |
   * The amount of money you want the other party to give you
   * How you determined the amount of money you are owed
 
-  If a law allows you to ask the court to award double or triple the amount of money that you are owed, then you should also explain how the defendant harmed you and why the court should award you more money damages for that harm.
+  You may be able to ask the court to award double or triple the amount of money owed. If so, explain in detail how the Defendant harmed you and why the court should award you more money damages for that harm. 
 
-  You can attach supporting documents on the next screen.
+  Supporting documents can be attached on the next screen.
 fields:
   - Reason for your claim: claim_description
     input type: area
@@ -631,7 +647,7 @@ fields:
 ---
 id: claim amount
 question: |
-  How much money does the defendant owe you in this case?
+  How much money are you asking the defendant to pay?
 fields:
   - Amount owed: claim_amount
 #    datatype: currency
@@ -685,7 +701,7 @@ script: |
 id: mediation_question
 mandatory: True
 question: |
-  Do you want to try mediation to settle your small claim?
+  Would you consider mediation to resolve your case?
 subquestion: |  
  ${collapse_template(mediation_template)}
 fields:
@@ -707,12 +723,13 @@ sets:
   - other_parties[i].name.suffix
 id: names of opposing parties
 question: |
-  % if user_started_case:
+  % if i == 0: 
   Who are you filing this claim against?
   % else:
-  Who is filing this claim against you?
+  Tell us about the next defendant
   % endif
-
+subquestion: |
+  The person you are filing the case against is called the defendant.
 fields:      
   - field: other_parties[i].person_type
     label: Are you filing against a person or a business?
@@ -723,7 +740,9 @@ fields:
       - Business or organization: business
 
   - note: |
-      To find the legal name and address of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
+      Please enter the Legal Name of the Business or Organization. 
+    
+      To find the legal name of a corporation, visit the Corporate Records Division of the Secretary of State’s Office website by clicking [here](https://corp.sec.state.ma.us/corpweb/CorpSearch/CorpSearch.aspx).
       
       If the defendant is not a corporation, and is doing business under a trade name ("doing business as," or d/b/a): 
     
@@ -776,7 +795,7 @@ id: opposing_parties_contact_information
 question: |
   What is ${other_parties[i]}'s contact information?
 subquestion: |  
-  Providing an email address is optional, **but recommended**. It helps the court reach the parties more quickly and can speed up your case.
+  Provide either a phone number or an email address. It helps the court reach the parties more quickly and can speed up your case. An email address is optional, **but recommended**. 
   
   ${collapse_template(defendant_contact_template)}
 fields:
@@ -797,6 +816,35 @@ content: |
   While you don’t have to know the defendant’s contact info right now, sharing it here can help the court process your case faster. If you don't know how to contact the defendant, leave this section blank.
 
 ---
+continue button field: set_all_military_statuses
+id: select all statuses
+question: |
+  Choose the current Military Status for each Defendant
+subquestion: |
+  For each defendant:
+
+  * If they are currently serving active duty in the military, answer "Yes".
+  * If they are not serving in the military, answer "No"
+  * If they concluded their service, answer "Past"
+  * If you are unsure, answer "Unknown"
+  ${ collapse_template(explain_military_service)}
+  
+fields:
+  - code: |
+      [
+        {
+          "field": party.attr_name("military_status"),
+          "label": f"{ party.name_full() }",
+          "item grid": {
+            "width": 3,
+            "breakpoint": "sm"
+          },
+          "datatype": "radio",
+          "choices": military_status_labels
+        }
+        for party in sorted(other_parties)
+      ]
+---
 template: why_military_template
 subject: Why do I have to provide the defendant's military status?
 content: |
@@ -810,12 +858,77 @@ question: |
 subquestion: |
   Based on the amount of your claim, the filing fee is ${ currency(court_costs_amount) }. 
   
-  However, if you earn under a certain amount, you can ask the court to help you pay the filing fee.
+  If you cannot afford the filing fee, you can use this interview to fill out a document requesting the court to determine if you may file your small claim for free. 
   
 fields:
   - Do you want to find out if you qualify for a fee waiver?: wants_fee_waiver
     datatype: yesnoradio
 --- 
+id: user benefits
+question: |
+  Do you receive any of these benefits?
+subquestion: |
+  Check any that apply
+fields:
+  - no label: public_assistance_kinds
+    datatype: checkboxes
+    choices:
+      - Transitional Aid to Families with Dependent Children (TAFDC): TAFDC
+      - Medicaid (MassHealth): Medicaid
+      - Emergency Aid to Elderly, Disabled or Children (EAEDC): EAEDC
+      - Massachusetts Veterans Benefits Programs: VA Benefits
+      - Supplemental Security Income (SSI): SSI
+    required: False
+---
+generic object: ALExhibitList
+id: any exhibits
+question: |
+  % if al_form_type in ['starts_case','existing_case','appeal']:
+  Are there any documents you want to submit with your filing?
+  % else:
+  Are there any documents you want to submit with your filing?
+  % endif
+fields:
+  - Do you have any documents you want to upload?: x.has_exhibits
+    datatype: yesnoradio
+  - note: |
+      **Okay**. You will have a chance to upload multiple documents. 
+      You can also add additional pages to this document.
+    show if: x.has_exhibits
+  - First document title: x[0].title
+    maxlength: 60 # longer might break TOC
+    show if: x.has_exhibits
+  - Upload the first document: x[0].pages
+    show if: x.has_exhibits
+    datatype: files
+    maximum image size: 1024
+    image upload type: jpeg
+    accept: |
+      "image/png, image/jpeg, .doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,.pdf"   
+validation code: |
+  if x.has_exhibits:
+    full_size = sum(a_page.size_in_bytes() for a_page in x[0].pages)
+    if full_size > (15 * 1024 * 1024):
+      validation_error("Upload a file smaller than 15 MB.")
+    if hasattr(x, "maximum_size"):
+      if full_size > x.maximum_size:
+        validation_error(
+          f"Upload a file smaller than {humanize.naturalsize(x.maximum_size)}"
+        )
+    if hasattr(x, "maximum_size_per_doc"):
+      if full_size > x.maximum_size_per_doc:
+        validation_error(
+          f"Upload a file smaller than {humanize.naturalsize(x.maximum_size)}"
+        )
+    try:
+      pdf_concatenate(x[0].pages)
+    except:
+      validation_error("Unable to convert this file. Please upload a new one.")
+    x[0].pages.complete_attribute = "ok"
+    x[
+      0
+    ].pages.reset_gathered()  # docassemble sets this attribute but we want to force gathering additional pages
+---
 code: |
   affidavit_of_indigency.enabled = wants_fee_waiver and is_indigent
 ---
@@ -1040,11 +1153,17 @@ subquestion: |
 id: download_small_claims
 event: small_claims_download
 question: |
-  All done
+  All done!
 subquestion: |
-  Thank you, ${users}. Your form is ready to download and deliver.
-  
-  View, download, and send your form below. Click the "Edit answers" button to fix any mistakes.
+  Thank you, ${users}. Your form is now complete.
+
+  You can:
+
+  - Download the affidavit and deliver it to the court
+  - Email the form to yourself or another person
+  - Or you can electronically file the affidavit to the court
+
+  If needed, you may also EDIT your answers to fix any mistakes. 
 
   ${ action_button_html(url_action('review_small_claims'), label='Edit answers', color='info') }
   
