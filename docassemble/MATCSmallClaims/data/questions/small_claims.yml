@@ -467,7 +467,7 @@ subquestion: |
 fields:  
   - Phone number: users[0].phone_number
     required: False
-  - Email address: users[0].email    
+  - "Email address (recommended)": users[0].email    
     datatype: email
     required: False
   - Other ways to reach you: users[0].other_contact_method
@@ -930,16 +930,12 @@ validation code: |
     ].pages.reset_gathered()  # docassemble sets this attribute but we want to force gathering additional pages
 ---
 code: |
-  affidavit_of_indigency.enabled = wants_fee_waiver and is_indigent
----
-code: |
   fees['Filing fee'].waive = True
   fees['Filing fee'].amount= court_costs_amount
   set_fee_waiver_defaults = True
 ---
 code: |
   affidavitofindigency_attachment.enabled = wants_fee_waiver and is_indigent
-
 ---
 code: |
   user_signature = ['users[0].signature'] 
@@ -1181,7 +1177,6 @@ progress: 100
 objects:
   - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
   - small_claims_attachment: ALDocument.using(title="Small claims", filename="SmallClaims26Printed.pdf", enabled=True, has_addendum=False, )
-  - affidavit_of_indigency: ALDocument.using(filename=&quot;affidavit-of-indigency.pdf&quot;, title=&quot;Affidavit of Indigency&quot; enabled=True)
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
