@@ -1,0 +1,131 @@
+---
+include:
+  - docassemble.EFSPIntegration:efiling_integration.yml
+  - docassemble.EFSPIntegration:toga_payments.yml
+---
+if: al_person_answering == "user"
+code: |
+  # The default needs the court to file in first, not doing that.
+  efile_setup = len(available_efile_courts) > 0
+---
+code: |
+  available_initial_efile_courts = proxy_conn.get_courts(fileable_type="INITIAL", with_names=False).data or []
+---
+if: al_person_answering != "user"
+code: |
+  # For now, the attorney stuff doesn't work still
+  efile_setup = False
+---
+code: |
+  efile_case_category_filters = [CodeType('5990'), 'Small Claims']
+---
+code: |
+  if claim_amount <= 500:
+    efile_case_type_filters = [CodeType('5994'), 'Small Claims $500 or less', ['Small Claims', '500']]
+  elif claim_amount > 500 and claim_amount <= 2000:
+    efile_case_type_filters = [CodeType('5993'), 'Small Claims $501 - $2000', ['Small Claims', '501', '2000']]
+  elif claim_amount > 2000 and claim_amount <= 5000:
+    efile_case_type_filters = [CodeType('5991'), 'Small Claims $2001 - $5000', ['Small Claims', '2001', '5000']]
+  elif claim_amount > 5000:
+    efile_case_type_filters = [CodeType('5992'), 'Small Claims over $5000', ['Small Claims', 'over', '5000']]
+  else:
+    efile_case_type_filters = []
+  
+  efile_case_type_filters.append('Small Claims')
+---
+code: |
+  small_claims_bundle.filing_type_filters = [CodeType('6143'), 'Statement of Small Claims entered through e-file process', 'Statement of Small Claim', 'Small Claim']
+---
+code: |
+  exhibit_attachment.filing_type_filters = ['Exhibit or document for inclusion in Small Claims Case filed', ['Exhibit', 'Small claim'], 'Exhibit']
+---
+generic object: ALDocumentBundle
+code: |
+  x.optional_services.there_are_any = False
+---
+generic object: ALDocument
+code: |
+  x.optional_services.there_are_any = False
+---
+code: |
+  users[i].party_type_filters = ['Plaintiff']
+---
+code: |
+  other_parties[i].party_type_filters = ['Defendant']
+---
+generic object: DAObject
+code: |
+  x.filing_description = ''
+  x.reference_number = None
+  x.filing_parties = ['users[0]']
+  x.filing_action = 'efile'
+---
+code: |
+  small_claims_bundle.description = comments_to_clerk
+  small_claims_bundle.reference_number = None
+  small_claims_bundle.filing_parties = ['users[0]']
+  small_claims_bundle.filing_action = 'efile'
+---
+code: |
+  is_initial_filing = True
+---
+if: can_check_efile
+code: |
+  efile_case_category
+  efile_case_type
+  small_claims_bundle.completed
+  # exhibit_attachment.completed
+
+  if wants_fee_waiver:
+    affidavitofindigency_attachment.completed
+    tyler_payment_id = default_jurisdiction_waiver
+  else:
+    tyler_payment_id
+
+  all_required_screens_shown
+  set_efile_variables = True
+---
+if: not can_check_efile
+code: |
+  set_efile_variables = True
+---
+code: |
+  small_claims_bundle.description = comments_to_clerk
+  efile
+  sent_email_to_court
+  efile_and_email = True
+---
+code: |
+  should_cc_user = False
+---
+code: |
+  users[0].is_form_filler = al_person_answering == "user"
+---
+id: user-wants-efile-no-specific-court
+question: |
+  Do you want to e-file this document directly with the court?
+subquestion: |
+  You may be able to electronically-file (e-file) this document with the court, if the court allows it. 
+
+  This means you don't have to print out the document. The court
+  will communicate with you through your email or phone.
+
+  You will have to provide your email to e-file this document. If you don't wish to provide that,
+  you can choose not to efile.
+fields:
+  - Do you want to e-file?: user_wants_efile
+    datatype: yesnoradio
+---
+id: you-will-not-be-able-to-efile
+question: |
+  You will *not* be able to e-file this document
+subquestion: |
+  % if al_person_answering == "attorney":
+  Unfortunately, e-filing as an attorney is not yet supported.
+  % else:
+  Unfortunately, you cannot e-file this document at the court through this program.
+  % endif
+
+  However, you can still continue and download a completed form at the end.
+continue button field: show_no_efile
+---
