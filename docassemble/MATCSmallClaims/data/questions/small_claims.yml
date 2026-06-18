@@ -317,11 +317,11 @@ question: |
 fields:
   - code: |
       attorneys[i].name_fields()
-  - "BBO number": attorneys[i].bbo_number
+  - "BBO number (required)": attorneys[i].bbo_number
     maxlength: 6
     required: True
     under text: |
-      [Click here](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
+      [Visit the Board of Bar Overseers site](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
 ---
 sets:
   - attorneys[i].address.address
@@ -355,7 +355,7 @@ subquestion: |
 fields:
   - Phone: attorneys[i].phone_number
     required: False
-  - Email: attorneys[i].email
+  - "Email (required)": attorneys[i].email
     required: True
 validation code: |
  if not attorneys[i].email and not attorneys[i].phone_number:
@@ -389,13 +389,13 @@ question: |
   % endif
 fields:
   - field: users[i].name.first
-    label: First name
+    label: First name (required)
     required: True
   - field: users[i].name.middle
     label: Middle name
     required: False
   - field: users[i].name.last
-    label: Last name
+    label: Last name (required)
     required: True
   - field: users[i].name.suffix
     label: Suffix (such as Jr., Sr., or III; leave blank if none)
@@ -526,6 +526,7 @@ terms:
     The person filing this case is called the plaintiff. If someone else is filing the case with you, they would also be the plaintiff.
 
 ---
+id: additional plaintiffs
 question: |
   % if al_person_answering == "attorney":
   Are there any additional {plaintiffs} in this case?
@@ -699,11 +700,10 @@ script: |
   </script> 
 ---
 id: mediation_question
-mandatory: True
 question: |
   Would you consider mediation to resolve your case?
 subquestion: |  
- ${collapse_template(mediation_template)}
+  ${collapse_template(mediation_template)}
 fields:
   - "Would you like to try mediation?": plaintiffs1_willing_to_mediate
     datatype: yesnoradio
@@ -711,9 +711,9 @@ fields:
 template: mediation_template
 subject: What is mediation?
 content: |
- - Mediation is a way to settle your small claim without going to trial.
- - During mediation, the parties in a lawsuit sit down with a neutral person, called a mediator, to talk out a solution to their legal problem.
- - If you try mediation and it doesn't resolve your claim, you may still take your claim to trial later.
+  - Mediation is a way to settle your small claim without going to trial.
+  - During mediation, the parties in a lawsuit sit down with a neutral person, called a mediator, to talk out a solution to their legal problem.
+  - If you try mediation and it doesn't resolve your claim, you may still take your claim to trial later.
 
 ---
 sets:
@@ -755,7 +755,7 @@ fields:
       is: business
   
   - field: other_parties[i].name.first
-    label: First name
+    label: First name (required)
     required: True
     show if: 
       variable: other_parties[i].person_type
@@ -769,7 +769,7 @@ fields:
       is: person
 
   - field: other_parties[i].name.last
-    label: Last name
+    label: Last name (required)
     required: True
     show if: 
       variable: other_parties[i].person_type
@@ -785,7 +785,7 @@ fields:
       name_suffix()
 
   - field: other_parties[i].name.first
-    label: Name of business or organization
+    label: Name of business or organization (required)
     required: True
     show if: 
       variable: other_parties[i].person_type
@@ -1065,6 +1065,7 @@ review:
       ${ signature_date }
 ---
 continue button field: users.revisit
+id: edit plaintiffs
 question: |
   Edit plaintiffs
 subquestion: |
@@ -1091,6 +1092,7 @@ edit:
 confirm: True
 ---
 continue button field: attorneys.revisit
+id: edit attorneys
 question: |
   Edit attorneys
 subquestion: |
@@ -1119,6 +1121,7 @@ edit:
 confirm: True
 ---
 continue button field: defendants.revisit
+id: edit defendants
 question: |
   Edit defendants
 subquestion: |
