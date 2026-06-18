@@ -1,10 +1,12 @@
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.EFSPIntegration:efiling_integration.yml
   - docassemble.MassAccess:massaccess.yml
   - docassemble.ALAffidavitOfIndigency:affidavit_body.yml
   - docassemble.MATCMilitaryAffidavit:military_affidavit.yml
   - docassemble.MATCTheme:matc_theme.yml
+  - efiling.yml
 ---
 metadata:
   title: >-
@@ -62,22 +64,21 @@ code: |
   al_form_type = "starts_case"  
 ---
 code: |
+  jurisdiction_id = 'massachusetts'
+---
+code: |
+  proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
+---
+code: |
   plaintiffs = users
   defendants = other_parties
 ---
 objects:
-  - users: ALPeopleList.using(complete_attribute=['name.first', 'address.address', 'email', 'phone_number'])
+  - users: ALPeopleList.using(complete_attribute='complete')
   - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
   - other_parties: ALPeopleList.using(
         there_are_any=True,
-        complete_attribute=['address.address', 'phone_number', 'email'])
-  - exhibit_attachment: ALExhibitDocument.using(
-          title="Exhibits",
-          filename="exhibits",
-          add_page_numbers=True,
-          include_table_of_contents=True,
-          include_exhibit_cover_pages=True,
-        )
+        complete_attribute='complete')
 ---
 sections:
   - introduction: Getting started
@@ -101,7 +102,7 @@ code: |
   nav.set_section("required_info")
   small_claims_intro
   filing_fee_acknowledged
-  
+
   nav.set_section("wants_fee_waiver")
   if wants_fee_waiver:
     is_indigent
@@ -113,7 +114,10 @@ code: |
     attorneys.there_are_any = True
   else:
     attorneys.there_are_any = False
-  
+
+  if can_check_efile:
+    tyler_login
+
   attorneys.gather()
   if attorneys.number_gathered() > 0:
     attorneys[0].bbo_number
@@ -153,6 +157,8 @@ code: |
   set_progress(70)
   trial_court
   trial_court.department
+
+  set_efile_variables
 
   users[0].states_above_true
   nav.set_section("review_small_claims")
@@ -250,9 +256,9 @@ continue button field: filing_fee_acknowledged
 question: |
   Filing fees for small claims
 subquestion: |
-  To file a small claim, you must also pay a filing fee based on the amount of your claim. If you cannot afford the filing fee, you can use this interview to fill out a document requesting the court to determine if you may file your small claim for free.
+  To file a small claim, you must also pay a one time fee to start the case based on the amount of your claim. If you cannot afford the fee, you can use this interview to fill out a document requesting the court to determine if you may file your small claim for free.
 
-  Amount of your claim | Filing fee
+  Amount of your claim | Initiation fee
   ---------------------|-----------  
   $500 or less         | $40  
   $501–2,000           | $50  
@@ -323,6 +329,25 @@ fields:
     under text: |
       [Visit the Board of Bar Overseers site](https://www.massbbo.org/bbolookup.php) to look up your BBO number.
 ---
+code: |
+  users[i].name.first
+  users[i].address.address
+  users[i].email
+  if can_check_efile:
+    users[i].is_form_filler
+    users[i].party_type
+    users[i].is_new
+  users[i].complete = True
+---
+code: |
+  other_parties[i].name.first
+  other_parties[i].address.address
+  other_parties[i].email
+  if can_check_efile:
+    other_parties[i].party_type
+    other_parties[i].is_new
+  other_parties[i].complete = True
+---
 sets:
   - attorneys[i].address.address
   - attorneys[i].address.city
@@ -356,6 +381,7 @@ fields:
   - Phone: attorneys[i].phone_number
     required: False
   - "Email (required)": attorneys[i].email
+    datatype: email
     required: True
 validation code: |
  if not attorneys[i].email and not attorneys[i].phone_number:
@@ -400,6 +426,21 @@ fields:
   - field: users[i].name.suffix
     label: Suffix (such as Jr., Sr., or III; leave blank if none)
     required: False
+---
+sets:
+  - x.address.address
+  - x.address.city
+  - x.address.zip
+  - x.address.unit
+  - x.address.state
+  - x.address.country
+id: persons address
+generic object: ALIndividual
+question: |
+  What is ${ x.possessive('address') }?
+fields:
+  - code: |
+      x.address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE, required={'zip': True})
 ---
 id: plaintiff's address
 question: |
@@ -460,16 +501,27 @@ question: |
   What is ${ users[0] }'s contact information?
   % endif
 subquestion: |
- If you do not have a phone number or email address, write the phone number or email of someone who can reach you. Providing an email address is optional, **but recommended**.
+  If you do not have a phone number or email address, write the phone number or email of someone who can reach you.
+  % if can_check_efile:
+  Providing an email address is required when e-filing.
+  % else:
+  Providing an email address is optional, **but recommended**.
+  % endif
  
   ${ collapse_template(why_contact_info_needed_template) }
  
 fields:  
   - Phone number: users[0].phone_number
     required: False
-  - "Email address (recommended)": users[0].email    
+  - label: |
+      % if can_check_efile:
+      Email address (required)
+      % else:
+      Email address (recommended)
+      % endif
+    field: users[0].email
     datatype: email
-    required: False
+    required: can_check_efile 
   - Other ways to reach you: users[0].other_contact_method
     input type: area
     required: False
@@ -506,11 +558,7 @@ validation code: |
 ---
 id: any other opposing parties
 question: |
-  % if user_started_case:
   Are there any other defendants?
-  % else:
-  Are there any other defendants?
-  % endif
 subquestion: |
   % if len(other_parties.elements) > 0:  
   So far, you have told us about ${comma_and_list(other_parties.complete_elements())}.
@@ -545,18 +593,8 @@ if: |
   len(all_matches) and all_courts.filter_courts(allowed_courts) 
 id: choose a court (courts matching provided address were found)
 question: |
-  % if al_form_type == 'starts_case':
   Where do you want to file your claim?
-  % elif al_form_type == 'appeal':
-  In which trial court did you first file your claim?
-  % else:
-  Where was your claim originally filed?
-  % endif
 subquestion: |
-  % if not al_form_type == 'starts_case':
-  Find the court name on your documents and match it with the court name here.
-  % endif
-
   % if len(all_matches) > 0:
   Below is a map of the court(s) that serve
   the address you gave us, 
@@ -591,7 +629,27 @@ fields:
   - no label: trial_court
     datatype: object
     object labeler: court_short_label
-    choices: all_courts.filter_courts(allowed_courts)
+    choices: |
+      all_courts.filter_courts(allowed_courts, search_column="tyler_code", search_func=lambda c: c in available_initial_efile_courts)
+    css class: not-required-if-disabled
+---
+if: |
+  not len(all_matches) and all_courts.filter_courts(allowed_courts) 
+id: choose a court (no courts matching address)
+question: |
+  Where do you want to file your claim?
+subquestion: |
+  ${map_of(combined_locations(all_matches))}
+  
+  ${ collapse_template(how_to_pick_court_help_template) } 
+  ${ collapse_template(court_selection_help_template) }
+  ${ collapse_template(address_help_template)}
+fields:
+  - no label: trial_court
+    datatype: object
+    object labeler: court_short_label
+    choices: |
+      all_courts.filter_courts(allowed_courts, search_column="tyler_code", search_func=lambda c: c in available_initial_efile_courts)
     css class: not-required-if-disabled
 ---
 template: court_selection_help_template
@@ -651,7 +709,7 @@ question: |
   How much money are you asking the defendant to pay?
 fields:
   - Amount owed: claim_amount
-#    datatype: currency
+    datatype: currency
     min: 0
   - "Your claim is for more than $7,000": reason_pexceeds_7000
     datatype: radio
@@ -660,7 +718,7 @@ fields:
       - I am suing for unfair and deceptive practices under Chapter 93A or under the security deposit statute. The base amount of my claim is still $7,000 or less
     js show if: |
       val("claim_amount") > 7000
-  - Filing fee: court_costs_amount
+  - Initiation fee: court_costs_amount
     input type: hidden
   - html: |
       <div class="da-container row">
@@ -802,6 +860,7 @@ fields:
   - Phone: other_parties[i].phone_number
     required: False
   - Email: other_parties[i].email
+    datatype: email
     required: False
   - Other ways to reach them: other_parties[i].other_contact_method
     input type: area
@@ -883,11 +942,7 @@ fields:
 generic object: ALExhibitList
 id: any exhibits
 question: |
-  % if al_form_type in ['starts_case','existing_case','appeal']:
   Are there any documents you want to submit with your filing?
-  % else:
-  Are there any documents you want to submit with your filing?
-  % endif
 fields:
   - Do you have any documents you want to upload?: x.has_exhibits
     datatype: yesnoradio
@@ -1149,11 +1204,53 @@ subquestion: |
 
   ${ exhibit_attachment.add_action() }
 ---
-id: download_small_claims
+if: not ready_to_efile
+id: download_small_claims_no_efile
 event: small_claims_download
 question: |
-  All done!
+  Download Form
 subquestion: |
+  Thank you, ${users}. Your form is now complete.
+
+  % if not user_wants_efile:
+
+  You indicated that you didn't want to e-file your document in this interview. You will have to restart this process if you
+  wish to e-file it using our website.
+
+  % else:
+
+  We are not able to e-file your document. Please call the clerk and try delivering the files below in
+  person or by e-filing through [the court's website](https://massachusetts.tylertech.cloud/ofsweb).
+  
+  % endif
+
+  You can:
+
+  - Download the affidavit and deliver it to the court
+  - Email the form to yourself or another person
+  - Or you can electronically file the affidavit to the court
+
+  If needed, you may also **edit** your answers to fix any mistakes. 
+
+  ${ action_button_html(url_action('review_small_claims'), label='Edit answers', color='info') }
+
+  ${ al_user_bundle.download_list_html() }
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+  
+progress: 100
+---
+if: ready_to_efile
+id: download_small_claims_efile
+event: small_claims_download
+question: |
+  % if not defined('efile') or not efile:
+  Review, Download, and Send Form
+  % else:
+  Form delivered
+  % endif
+subquestion: |
+  % if not defined('efile') or not efile:
   Thank you, ${users}. Your form is now complete.
 
   You can:
@@ -1165,9 +1262,30 @@ subquestion: |
   If needed, you may also EDIT your answers to fix any mistakes. 
 
   ${ action_button_html(url_action('review_small_claims'), label='Edit answers', color='info') }
+
+  % elif defined('efile') and efile:
+
+  Your forms have been delivered to the ${ trial_court }.
+
+  You can click "View" below to open the form in a new window, or you can download and save or print a copy of this form for your 
+  records.
+
+  If you do not hear from the court in 1 business day, call the Court Clerk's Office.
+
+  % elif defined('efile') and not efile:
+
+  E-filing was not successful. Call the clerk and try delivering
+  the files below a different way.
+
+  % endif
+
+  The clerk for ${ trial_court} can be called at: ${ trial_court.phone }.
+
+  % if not (defined('efile') and efile):
+  ${ action_button_html(url_ask([{'recompute': ['efile_and_email']}]), label='E-File', id_tag='efile-button', icon='file-export', size='md')}
+  % endif
   
   ${ al_user_bundle.download_list_html() }
-  
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
   
@@ -1176,12 +1294,23 @@ progress: 100
 # ALDocument objects specify the metadata for each template
 objects:
   - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
-  - small_claims_attachment: ALDocument.using(title="Small claims", filename="SmallClaims26Printed.pdf", enabled=True, has_addendum=False, )
+  - small_claims_attachment: ALDocument.using(title="Small claims", filename="SmallClaims26Printed.pdf", enabled=True, has_addendum=False)
+---
+if: can_check_efile
+objects:
+  - exhibit_attachment: ALExhibitDocument.using(title="Exhibits", filename="exhibits", add_page_numbers=True, include_table_of_contents=True, include_exhibit_cover_pages=True, maximum_size=max_total_exhibit_size, maximum_size_per_doc=max_per_file)
+---
+if: not can_check_efile
+objects:
+  - exhibit_attachment: ALExhibitDocument.using(title="Exhibits", filename="exhibits", add_page_numbers=True, include_table_of_contents=True, include_exhibit_cover_pages=True)
+---
+objects:
+  - small_claims_bundle: ALDocumentBundle.using(title="Small Claims", filename="small-claims-attachment.pdf", elements=[small_claims_attachment, exhibit_attachment], enabled=True)
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
   - al_user_bundle: ALDocumentBundle.using(elements=[small_claims_Post_interview_instructions, small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims26.pdf", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_attachment, exhibit_attachment, affidavitofindigency_attachment], filename="small_claims26.pdf", title="All forms to deliver to court", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[small_claims_bundle, affidavitofindigency_attachment], filename="small_claims26.pdf", title="All forms to deliver to court", enabled=True)
 ---
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
