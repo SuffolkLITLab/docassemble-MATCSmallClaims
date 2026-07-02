@@ -67,6 +67,9 @@ code: |
   jurisdiction_id = 'massachusetts'
 ---
 code: |
+  form_uses_efiling = True
+---
+code: |
   proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
 ---
 code: |
@@ -137,7 +140,12 @@ code: |
   defendants
   other_parties[0].address.address
   other_parties[0].phone_number
-  set_all_military_statuses
+  for party in other_parties:
+    if party.person_type == "business":
+      party.military_status = "no"
+  if any(party.person_type != "business" for party in other_parties):
+    set_all_military_statuses
+    
   if any([party.military_status == "unknown" for party in other_parties]):
     bond_agreement_i_understand
 
@@ -886,6 +894,7 @@ subquestion: |
   * If they are not serving in the military, answer "No"
   * If they concluded their service, answer "Past"
   * If you are unsure, answer "Unknown"
+
   ${ collapse_template(explain_military_service)}
   
 fields:
@@ -901,7 +910,7 @@ fields:
           "datatype": "radio",
           "choices": military_status_labels
         }
-        for party in sorted(other_parties)
+        for party in sorted(other_parties) if party.person_type != "business"
       ]
 ---
 template: why_military_template
