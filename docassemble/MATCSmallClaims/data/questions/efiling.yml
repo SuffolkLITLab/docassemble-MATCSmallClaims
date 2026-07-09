@@ -3,6 +3,9 @@ include:
   - docassemble.EFSPIntegration:efiling_integration.yml
   - docassemble.EFSPIntegration:toga_payments.yml
 ---
+code: |
+  interview_allows_firm_account = False
+---
 if: al_person_answering == "user"
 code: |
   # The default needs the court to file in first, not doing that.
@@ -92,7 +95,6 @@ code: |
 code: |
   small_claims_bundle.description = comments_to_clerk
   efile
-  sent_email_to_court
   efile_and_email = True
 ---
 code: |

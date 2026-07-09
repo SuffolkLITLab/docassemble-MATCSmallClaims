@@ -108,7 +108,7 @@ code: |
 
   nav.set_section("wants_fee_waiver")
   if wants_fee_waiver:
-    is_indigent
+    ask_affidavit_small_claims_questions
     set_fee_waiver_defaults
 
   nav.set_section("plaintiff_info")
@@ -262,7 +262,7 @@ subquestion: |
 id: small_claims_filing_fee
 continue button field: filing_fee_acknowledged
 question: |
-  Filing fees for small claims
+  Initiation filing fees for small claims
 subquestion: |
   To file a small claim, you must also pay a one time fee to start the case based on the amount of your claim. If you cannot afford the fee, you can use this interview to fill out a document requesting the court to determine if you may file your small claim for free.
 
@@ -313,7 +313,7 @@ question:  |
   % endif
 fields:
   - code: |
-      users[0].name_fields()
+      name_fields_with_defaults(proxy_conn, users[0], False, can_check_efile) if user_role == "user" else users[0].name_fields()
 ---
 id: attorney information
 sets:
@@ -501,6 +501,10 @@ subject: |
 content: | 
   The court needs to be able to communicate with you about your claim. Make sure to include at least one way to reach you other than by mail.
 ---
+sets:
+  - users[0].phone_number
+  - users[0].email
+  - users[0].other_contact_method
 id: plaintiff's contact information
 question: |
   % if al_person_answering == "user":
@@ -519,27 +523,8 @@ subquestion: |
   ${ collapse_template(why_contact_info_needed_template) }
  
 fields:  
-  - Phone number: users[0].phone_number
-    required: False
-  - label: |
-      % if can_check_efile:
-      Email address (required)
-      % else:
-      Email address (recommended)
-      % endif
-    field: users[0].email
-    datatype: email
-    required: can_check_efile 
-  - Other ways to reach you: users[0].other_contact_method
-    input type: area
-    required: False
-
-validation code: |
-  if (not showifdef('users[0].phone_number') and \
-      (not showifdef('users[0].mobile_number')) and \
-      (not showifdef('users[0].email')) and \
-      (not showifdef('users[0].other_contact_method'))):
-    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
+  - code: |
+      contact_fields_with_defaults(proxy_conn, users[0], False, can_check_efile) 
 ---
 id: additional plaintiff's contact information
 question: |
@@ -730,7 +715,7 @@ fields:
     input type: hidden
   - html: |
       <div class="da-container row">
-        <span for="court_costs_amount_display" class="col-md-4 datext-right">Filing fee</span>
+        <span for="court_costs_amount_display" class="col-md-4 datext-right">Initiation fee</span>
         <span class="col-md-8" aria-live="polite">
           $<span id="court_costs_amount_display">--</span>
         </span>
@@ -998,6 +983,64 @@ code: |
   fees['Filing fee'].amount= court_costs_amount
   set_fee_waiver_defaults = True
 ---
+##################
+## Affidavit Duplicate question and logic
+##################
+id: qualify on face
+continue button field: qualify_interstitial
+question: |
+  % if need_supplement:
+  You need to submit a supplemental affidavit to learn if you qualify
+  % else:
+  Based on your answers, it looks like you qualify for a fee waiver
+  % endif
+subquestion: |
+  % if public_assistance_kinds.any_true():
+  Based on the information you gave us so far, you should qualify for a fee
+  waiver. Learn more at [MassLegalHelp.org](https://www.masslegalhelp.org/what-if-the-clerk-does-not-approve-my-affidavit-of-indigency-right-away-).
+  
+  You receive these public benefits: ${public_assistance_kinds.true_values()}
+  % elif household_income_qualifies:
+  Based on the information you gave us so far, you should qualify for a fee
+  waiver. Learn more at [MassLegalHelp.org](https://www.masslegalhelp.org/what-if-the-clerk-does-not-approve-my-affidavit-of-indigency-right-away-).
+  
+  **You earn less than the income limit.**
+
+  You said that your ${times_per_year(times_per_year_list, hh_income.times_per_year).lower()} income
+  is ${currency(hh_income.total(times_per_year=hh_income.times_per_year))}.
+  
+  The limit for a household of ${nice_number(household_size)} is 125% of
+  the poverty level, or ${currency(household_income_limit/hh_income.times_per_year)}.
+
+  % elif not can_afford:
+  You told us that you can't afford to pay the fees and pay for the necessities
+  of life. A judge will take a closer look at your income and expenses and decide
+  if you qualify for sure.
+
+  % endif
+  
+  ${ collapse_template(fee_waiver_help_template) }
+
+  % if public_assistance_kinds.any_true() or household_income_qualifies:
+  % else:
+  Next, you will complete the supplemental affidavit. This will ask for more
+  details about your finances, which the court needs to determine if you qualify.
+  % endif
+---
+code: |
+  public_assistance_kinds
+  if public_assistance_kinds.all_false():
+    has_household_members
+    if not household_income_qualifies:
+      can_afford
+  if is_indigent:
+    qualify_interstitial
+    if need_supplement:
+      affidavit_supplement_legal_logic 
+  else:
+    doesnt_qualify_interstitial
+  ask_affidavit_small_claims_questions = True
+---
 code: |
   affidavitofindigency_attachment.enabled = wants_fee_waiver and is_indigent
 ---
@@ -1111,10 +1154,10 @@ review:
       % else:
       No
       % endif
-  - Edit: ask_affidavit_questions
+  - Edit: affidavit_legal_logic
     button: |
       **Affidavit of indigency:**
-      ${ ask_affidavit_questions }
+      ${ is_indigent }
   - Edit: user_signature
     button: |
       **Signature:**
@@ -1142,12 +1185,15 @@ columns:
       row_item.address.block() if defined("row_item.address.address") else ""
   - Phone number: |
       row_item.phone_number if defined("row_item.phone_number") else ""
+  - Mobile number: |
+      row_item.mobile_number if defined("row_item.mobile_number") else ""
   - Signature: |
       row_item.signature if defined("row_item.signature") else ""
 edit:
   - name.first
   - address.address
   - phone_number
+  - mobile_number
   - signature
 confirm: True
 ---
@@ -1352,21 +1398,21 @@ attachment:
 
     - "users1_name_full": ${ users[0] }
     - "users1_address_on_one_line": ${ users[0].address.on_one_line() }
-    - "users1_phone_number": ${ users[0].phone_number }
+    - "users1_phone_number": ${ users[0].phone_numbers() }
     - "users1_email": ${ users[0].email if defined("users[0].email") else "" }
     - "users1_signature": ${ users[0].signature }
 
     - "users2_name_full": ${ users[1] if users.number_gathered() > 1 else "" }
     - "users2_address_on_one_line": |
         ${ users[1].address.on_one_line() if users.number_gathered() > 1 else "" }
-    - "users2_phone_number": ${ users[1].phone_number if users.number_gathered() > 1 else "" }
+    - "users2_phone_number": ${ users[1].phone_numbers() if users.number_gathered() > 1 else "" }
     - "users2_email": |
         ${ users[1].email if users.number_gathered() > 1 and defined("users[1].email") else "" }
 
     - "attorney1_name_full": ${ attorneys[0] if attorneys.number_gathered() > 0 else "" }
     - "attorney1_address.on_one_line": |
         ${ attorneys[0].address.on_one_line() if attorneys.number_gathered() > 0 else "" }
-    - "attorney1_phone_number": ${ attorneys[0].phone_number if attorneys.number_gathered() > 0 else "" }
+    - "attorney1_phone_number": ${ attorneys[0].phone_numbers() if attorneys.number_gathered() > 0 else "" }
     - "attorney1_email": |
         ${ attorneys[0].email if attorneys.number_gathered() > 0 and defined("attorneys[0].email") else "" }
     - "attorney1_bbo": ${ attorneys[0].bbo_number if attorneys.number_gathered() > 0 else "" }
@@ -1374,14 +1420,14 @@ attachment:
     - "attorney2_name_full": ${ attorneys[1] if attorneys.number_gathered() > 1 else "" }
     - "attorney2_addressone_one_line": |
         ${ attorneys[1].address.on_one_line() if attorneys.number_gathered() > 1 else "" }
-    - "attorney2_phone_number": ${ attorneys[1].phone_number if attorneys.number_gathered() > 1 else "" }
+    - "attorney2_phone_number": ${ attorneys[1].phone_numbers() if attorneys.number_gathered() > 1 else "" }
     - "attorney2_email": |
         ${ attorneys[1].email if attorneys.number_gathered() > 1 and defined("attorneys[1].email") else "" }
     - "attorney2_bbo": ${ attorneys[1].bbo_number if attorneys.number_gathered() > 1 else "" }
 
     - "other_parties1_name_on_one_line": ${ other_parties[0] }
     - "other_parties1_address_on_one_line": ${ other_parties[0].address.on_one_line() }
-    - "other_parties1_phone_number": ${ other_parties[0].phone_number }
+    - "other_parties1_phone_number": ${ other_parties[0].phone_numbers() }
     - "other_parties1_email": |
         ${ other_parties[0].email if defined("other_parties[0].email") else "" }
 
@@ -1389,7 +1435,7 @@ attachment:
     - "other_parties2_address_on_one_line": |
         ${ other_parties[1].address.on_one_line() if other_parties.number_gathered() > 1 else "" }
     - "other_parties2_phone_number": |
-        ${ other_parties.item(1).phone_number }
+        ${ other_parties.item(1).phone_numbers() }
     - "other_parties2_email": |
         ${ other_parties[1].email }
     
