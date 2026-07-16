@@ -5,7 +5,7 @@ Feature: MATC Small Claims
 Scenario: small claims starts
   Given I start the interview at "small_claims.yml"
   And the maximum seconds for each Step in this Scenario is 30
-  And I set the variable "acknowledged_information_use to "True"
+  And I set the variable "acknowledged_information_use" to "True"
   And I tap to continue
 
 @sc1 @full @slow
