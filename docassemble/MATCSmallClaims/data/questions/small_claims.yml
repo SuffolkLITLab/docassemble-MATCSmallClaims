@@ -583,7 +583,7 @@ fields:
     datatype: yesnoradio
 ---
 if: |
-  len(all_matches) and all_courts.filter_courts(allowed_courts) 
+  len(all_matches) and all_courts.filter_courts(allowed_courts)
 id: choose a court (courts matching provided address were found)
 question: |
   Where do you want to file your claim?
@@ -623,11 +623,11 @@ fields:
     datatype: object
     object labeler: court_short_label
     choices: |
-      all_courts.filter_courts(allowed_courts, search_column="tyler_code", search_func=lambda c: c in available_initial_efile_courts)
+      all_courts.filter_courts(allowed_courts, search_column="tyler_code", search_func=court_search_func)
     css class: not-required-if-disabled
 ---
 if: |
-  not len(all_matches) and all_courts.filter_courts(allowed_courts) 
+  not len(all_matches) and all_courts.filter_courts(allowed_courts)
 id: choose a court (no courts matching address)
 question: |
   Where do you want to file your claim?
@@ -642,8 +642,16 @@ fields:
     datatype: object
     object labeler: court_short_label
     choices: |
-      all_courts.filter_courts(allowed_courts, search_column="tyler_code", search_func=lambda c: c in available_initial_efile_courts)
+      all_courts.filter_courts(allowed_courts, search_column="tyler_code", search_func=court_search_func)
     css class: not-required-if-disabled
+---
+if: user_wants_efile
+code: |
+  court_search_func = lambda c: c in available_initial_efile_courts
+---
+if: not user_wants_efile
+code: |
+  court_search_func = lambda c: True
 ---
 template: court_selection_help_template
 subject: How courts are chosen based on address

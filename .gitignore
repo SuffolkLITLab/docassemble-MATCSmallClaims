@@ -39,3 +39,13 @@ sdist/
 var/
 wheels/
 share/python-wheels/
+
+
+## Local ALKiln stuff
+alkiln-*
+.env
+.envrc
+cucumber-report*
+debug_log*
+runtime_config.json
+
