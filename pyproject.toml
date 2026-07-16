@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docassemble.MATCSmallClaims"
-version = "1.0"
+version = "2.0b1"
 description = "Massachusetts small claims complaint"
 readme = "README.md"
 authors = [
