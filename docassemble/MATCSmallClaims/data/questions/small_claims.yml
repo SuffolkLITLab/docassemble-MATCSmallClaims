@@ -645,11 +645,11 @@ fields:
       all_courts.filter_courts(allowed_courts, search_column="tyler_code", search_func=court_search_func)
     css class: not-required-if-disabled
 ---
-if: user_wants_efile
+if: can_check_efile
 code: |
   court_search_func = lambda c: c in available_initial_efile_courts
 ---
-if: not user_wants_efile
+if: not can_check_efile
 code: |
   court_search_func = lambda c: True
 ---
@@ -1357,7 +1357,7 @@ progress: 100
 # ALDocument objects specify the metadata for each template
 objects:
   - small_claims_Post_interview_instructions: ALDocument.using(title="Instructions", filename="small_claims_next_steps.docx", enabled=True, has_addendum=False)
-  - small_claims_attachment: ALDocument.using(title="Small claims", filename="SmallClaims26Printed.pdf", enabled=True, has_addendum=False)
+  - small_claims_attachment: ALDocument.using(title="Small claims", filename="SmallClaims.pdf", enabled=True, has_addendum=False)
 ---
 if: can_check_efile
 objects:
@@ -1391,7 +1391,7 @@ attachment:
   filename: small_claims26.pdf
   variable name: small_claims_attachment[i]
   skip undefined: True
-  pdf template file: SmallClaims26Printed.pdf
+  pdf template file: SmallClaims26-MilitaryAffText.pdf
   fields:
     - "bmc": ${ trial_court.department == "Boston Municipal Court" }
     - "district": ${ trial_court.department == "District Court" }
@@ -1453,6 +1453,12 @@ attachment:
 
     - "users1_signature": ${ users[0].signature }
     - "signature_date": ${ signature_date }
+
+    - "defendant_is_serving": ${ any(defendant.military_status == "yes" for defendant in other_parties)}
+    - "defendant_is_not_serving": ${ all(defendant.military_status == "no" for defendant in other_parties)}
+    - "unsure_defendant_serving": ${ any(defendant.military_status == "unknown" for defendant in other_parties)}
+    - "signature_date__1": ${ signature_date if defined("set_all_military_statuses") else "" }
+    - "users1_signature__1": ${ users[0].signgature if defined("set_all_military_statuses") else ""}
 
     - "plaintiffs1_willing_to_mediate": ${ plaintiffs1_willing_to_mediate }
 
