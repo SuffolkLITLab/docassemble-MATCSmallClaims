@@ -30,7 +30,8 @@ jobs:
         uses: suffolkLITLab/ALKiln/action_for_github_server@v5
         with:
           SHOW_DOCKER_OUTPUT: "${{ github.event.inputs.show_docker_output }}"
-          DOCASSEMBLE_IMAGE: "ghcr.io/suffolklitlab/docassemble:latest"
+          # EFSPIntegration 1.8.1 requires Python 3.12; latest now uses 3.14.
+          DOCASSEMBLE_IMAGE: "ghcr.io/suffolklitlab/docassemble:sha-ad91857"
       - run: echo "ALKiln finished starting the isolated GitHub docassemble server"
         shell: bash
       - name: Use ALKiln to run tests
